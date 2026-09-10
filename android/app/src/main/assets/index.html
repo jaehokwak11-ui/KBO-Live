@@ -220,6 +220,36 @@ footer p{margin:0 0 6px}
 .bsum{margin:10px 0 4px; font-size:12.5px; color:var(--ink2)}
 .bsum b{font-variant-numeric:tabular-nums}
 
+.gdate{font-size:13px; font-weight:600; margin:12px 0 6px}
+.gc{border:1px solid var(--line); border-radius:6px; padding:10px 12px; margin-bottom:8px; cursor:pointer; transition:border-color .18s ease}
+.gc:hover{border-color:var(--ink3)}
+.gc.on{border-color:var(--accent); background:var(--accent-w)}
+.gc .gt2{display:flex; align-items:center; gap:8px; font-size:11px; color:var(--ink3); margin-bottom:7px}
+.gc .st{font-weight:600; color:var(--neg)}
+.gc .st.fin{color:var(--ink3)}
+.gside{display:flex; align-items:center; gap:8px; padding:3px 0}
+.gside .nm{display:inline-block; font-size:13px; font-weight:600; padding:3px 9px; border-radius:4px; min-width:74px; text-align:center}
+.gside .sc{margin-left:auto; font-size:18px; font-weight:600; font-variant-numeric:tabular-nums}
+.gside .wp{margin-left:auto; font-size:12.5px; color:var(--ink2); font-variant-numeric:tabular-nums}
+.gbar{height:4px; border-radius:2px; overflow:hidden; display:flex; margin-top:8px}
+.gbar i{display:block; height:100%}
+.gd{border:1px solid var(--line2); border-radius:6px; padding:13px; margin-top:10px; background:var(--panel)}
+.gd h3{margin:0 0 8px; font-size:13px; font-weight:600}
+.gwp{display:flex; align-items:baseline; gap:10px; margin-bottom:10px}
+.gwp .big{font-size:26px; font-weight:700; font-variant-numeric:tabular-nums}
+.gwp .sm{font-size:12px; color:var(--ink3)}
+.cmp{display:grid; grid-template-columns:38px 1fr 52px 1fr 38px; gap:4px 6px; align-items:center; font-size:11.5px; margin-top:4px}
+.cmp .lab{text-align:center; color:var(--ink3)}
+.cmp .v{font-variant-numeric:tabular-nums; text-align:center; font-weight:600}
+.cmp .barL,.cmp .barR{height:5px; background:var(--line); border-radius:2px; overflow:hidden; display:flex}
+.cmp .barL{justify-content:flex-end}
+.cmp .barL i,.cmp .barR i{display:block; height:100%}
+.pick2{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:10px 0}
+.pick2 label{font-size:11px; color:var(--ink3); display:block; margin-bottom:3px}
+.pick2 select{width:100%}
+.scores{display:flex; flex-wrap:wrap; gap:5px; margin-top:6px}
+.scores span{font-size:11.5px; padding:2px 8px; border-radius:3px; background:var(--alt); color:var(--ink2); font-variant-numeric:tabular-nums}
+
 /* ---- 뉴스 ---- */
 .ni{padding:9px 0; border-bottom:1px solid var(--line)}
 .ni:last-child{border-bottom:0}
@@ -267,10 +297,155 @@ footer p{margin:0 0 6px}
   transition:color .18s ease, border-color .18s ease;
 }
 .tabs button.on{color:var(--ink); font-weight:600; border-bottom-color:var(--accent)}
+.sub2tab{display:flex; gap:6px; margin:2px 0 6px}
+.sub2tab button{
+  border:1px solid var(--line2); background:transparent; color:var(--ink3);
+  font-size:12px; padding:4px 12px; border-radius:999px;
+}
+.sub2tab button.on{background:var(--ink); border-color:var(--ink); color:var(--bg); font-weight:600}
 .pane{display:none; animation:fade .28s ease}
 .pane.on{display:block}
 @keyframes fade{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
 
+
+/* ================= 움직임 (액션마다 부드럽게) ================= */
+:root{
+  --ease:cubic-bezier(.22,.9,.28,1);
+  --ease2:cubic-bezier(.34,1.42,.5,1);
+  --ease3:cubic-bezier(.65,0,.35,1);
+}
+@keyframes rise{from{opacity:0; transform:translateY(16px) scale(.982)} to{opacity:1; transform:none}}
+@keyframes drop{from{opacity:0; transform:translateY(-12px)} to{opacity:1; transform:none}}
+@keyframes popIn{from{opacity:0; transform:scale(.93)} to{opacity:1; transform:none}}
+@keyframes pulseIn{0%{opacity:.25; transform:scale(.82)} 62%{transform:scale(1.07)} 100%{opacity:1; transform:none}}
+@keyframes slideIn{from{opacity:0; transform:translateX(14px)} to{opacity:1; transform:none}}
+@keyframes shimmer{0%{background-position:-150% 0} 100%{background-position:250% 0}}
+@keyframes ripple{to{transform:scale(2.6); opacity:0}}
+@keyframes glowRing{0%{box-shadow:0 0 0 0 rgba(var(--fill),.30)} 70%{box-shadow:0 0 0 12px rgba(var(--fill),0)} 100%{box-shadow:0 0 0 0 rgba(var(--fill),0)}}
+@keyframes floaty{0%{transform:translateY(0)} 50%{transform:translateY(-4px)} 100%{transform:translateY(0)}}
+
+.rise{animation:rise .5s var(--ease) both; animation-delay:calc(var(--i,0) * 55ms)}
+.drop{animation:drop .42s var(--ease) both}
+.pop{animation:popIn .4s var(--ease2) both}
+.pulse{animation:pulseIn .55s var(--ease2) both}
+.slide{animation:slideIn .42s var(--ease) both; animation-delay:calc(var(--i,0) * 42ms)}
+
+/* 버튼: 눌리는 느낌 + 잔물결 */
+button{position:relative; overflow:hidden;
+  transition:transform .16s var(--ease2), background-color .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease), box-shadow .24s var(--ease)}
+button:active{transform:scale(.955)}
+button:disabled{transform:none}
+.btn.pri:not(:disabled):hover{box-shadow:0 6px 18px -8px rgba(var(--fill),.75)}
+.rip{position:absolute; border-radius:50%; pointer-events:none;
+  background:currentColor; opacity:.20; transform:scale(0); animation:ripple .62s var(--ease3) forwards}
+
+/* 카드가 살짝 뜬다 */
+.gc{transition:border-color .22s var(--ease), transform .24s var(--ease), box-shadow .26s var(--ease), background-color .26s var(--ease)}
+.gc:hover{transform:translateY(-2px); box-shadow:0 10px 24px -18px rgba(0,0,0,.55)}
+.gc:active{transform:translateY(0) scale(.995)}
+.gc.on{animation:glowRing .8s var(--ease) 1}
+.gc.mine{border-left:3px solid var(--accent)}
+.mytag{font-size:10px; font-weight:700; color:var(--accent); background:var(--accent-w);
+  padding:1px 6px; border-radius:3px; letter-spacing:.02em}
+
+/* 막대는 항상 스르륵 */
+.gbar i,.cmp .barL i,.cmp .barR i,.si .track i{width:0; transition:width .8s var(--ease)}
+.gbar{background:var(--line)}
+
+/* 탭 전환 */
+.pane{display:none}
+.pane.on{display:block; animation:rise .42s var(--ease) both}
+.tabs button::after{content:""; position:absolute; left:50%; right:50%; bottom:-1px; height:2px;
+  background:var(--accent); transition:left .28s var(--ease), right .28s var(--ease)}
+.tabs button.on::after{left:12%; right:12%}
+.tabs button.on{border-bottom-color:transparent}
+.sub2tab button{transition:background-color .24s var(--ease), color .24s var(--ease), border-color .24s var(--ease), transform .16s var(--ease2)}
+
+/* 표 */
+.plist tr{transition:transform .22s var(--ease), background-color .22s var(--ease)}
+.plist tr:hover{transform:translateX(2px)}
+tbody tr.rise{animation:rise .46s var(--ease) both; animation-delay:calc(var(--i,0) * 42ms)}
+
+/* 진행 중 표시 깜빡임 */
+.gc .st:not(.fin){animation:floaty 2.2s ease-in-out infinite}
+
+/* 갱신 중 반짝임 */
+.busy{background-image:linear-gradient(100deg, transparent 20%, rgba(var(--fill),.13) 45%, transparent 70%);
+  background-size:220% 100%; animation:shimmer 1.25s linear infinite}
+
+/* 라인업 */
+.lu{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0 4px}
+.lucol{border:1px solid var(--line); border-radius:6px; overflow:hidden; animation:rise .5s var(--ease) both}
+.lucol:nth-child(2){animation-delay:.09s}
+.luh{font-size:11.5px; font-weight:700; padding:4px 8px; text-align:center}
+.lup{font-size:11.5px; padding:5px 8px; border-bottom:1px solid var(--line); color:var(--ink2)}
+.lur{display:flex; align-items:center; gap:6px; padding:3px 8px; font-size:11.5px;
+  border-bottom:1px solid var(--line)}
+.lur:last-child{border-bottom:0}
+.lur .luo{width:12px; color:var(--ink3); font-variant-numeric:tabular-nums}
+.lur .lun{flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lur .lupos{color:var(--ink3); font-size:10.5px}
+
+/* 분석 글 */
+.ana p{margin:0 0 9px; font-size:12.5px; line-height:1.72; color:var(--ink2)}
+.ana p:first-child{color:var(--ink); font-size:13px}
+.ana p:last-child{margin-bottom:0}
+
+html{scroll-behavior:smooth}
+
+
+/* ---- 예측 득점 ---- */
+.pscore{display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+  gap:8px; margin:10px 0 2px; padding:12px 10px;
+  border:1px solid var(--line); border-radius:8px; background:var(--alt)}
+.pscore .pside{display:flex; flex-direction:column; align-items:center; gap:5px}
+.pscore .pt{font-size:11.5px; font-weight:700; padding:2px 10px; border-radius:4px}
+.pscore .pside b{font-size:30px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums}
+.pscore .pmid{font-size:10.5px; color:var(--ink3); white-space:nowrap}
+
+/* ---- 분석 ---- */
+.ana{display:flex; flex-direction:column; gap:12px}
+.anab{border-left:2px solid var(--line2); padding-left:11px}
+.anah{font-size:11px; font-weight:700; color:var(--accent); letter-spacing:.02em; margin-bottom:5px}
+.ana p{margin:0 0 7px; font-size:12.5px; line-height:1.75; color:var(--ink2)}
+.ana p:last-child{margin-bottom:0}
+.ana p b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums}
+
+/* 선발 후보별 승률 */
+.oplist{display:flex; flex-direction:column; gap:3px; margin:7px 0}
+.oprow{display:grid; grid-template-columns:96px 1fr 48px; gap:7px; align-items:center;
+  font-size:11.5px; padding:2px 0}
+.oprow.on{font-weight:700}
+.oprow.on .opn{color:var(--ink)}
+.oprow .opn{color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.oprow .opbar{height:6px; background:var(--line); border-radius:3px; overflow:hidden}
+.oprow .opbar i{display:block; height:100%; width:0; border-radius:3px; transition:width .8s var(--ease)}
+.oprow .opv{text-align:right; font-variant-numeric:tabular-nums; color:var(--ink)}
+
+/* 누가 해주면 이기나 */
+.klist{display:flex; flex-direction:column; gap:5px; margin:8px 0 9px}
+.krow{display:grid; grid-template-columns:1fr 42px 60px 42px; gap:6px; align-items:center; font-size:11.5px}
+.krow .kn{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ink); font-weight:600}
+.krow .kn em{font-style:normal; font-weight:400; font-size:10px; color:var(--ink3); margin-left:5px}
+.krow .kv{font-variant-numeric:tabular-nums; text-align:center; font-weight:600}
+.krow .kv.up{color:var(--pos)} .krow .kv.dn{color:var(--neg)}
+.krow .ktrack{height:6px; background:var(--line); border-radius:3px; overflow:hidden}
+.krow .ktrack i{display:block; height:100%; width:0; border-radius:3px;
+  background:linear-gradient(90deg, var(--neg), var(--pos)); transition:width .8s var(--ease)}
+
+@keyframes radarIn{from{transform:scale(.06); opacity:0} to{transform:none; opacity:1}}
+/* 최근 5경기 */
+.frm{display:inline-flex; gap:2px; margin-left:6px; vertical-align:middle}
+.frm i{display:inline-flex; align-items:center; justify-content:center;
+  width:15px; height:15px; border-radius:3px; font-style:normal;
+  font-size:9.5px; font-weight:700; line-height:1; letter-spacing:-.02em;
+  animation:popIn .36s var(--ease2) both}
+.frm i.w{background:rgba(30,122,76,.16); color:var(--pos)}
+.frm i.l{background:rgba(176,59,48,.16); color:var(--neg)}
+.frm i.d{background:var(--alt); color:var(--ink3); border:1px solid var(--line)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .frm i.w{background:rgba(79,176,124,.18)}
+:root:not([data-theme="light"]) .frm i.l{background:rgba(224,119,107,.18)}}
+#gameRaw{font-size:11px; color:var(--ink3); line-height:1.6; margin-top:6px; word-break:break-all}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 </style>
 
@@ -294,15 +469,39 @@ footer p{margin:0 0 6px}
   </header>
 
   <nav class="tabs" role="tablist">
+    <button id="tabGame" role="tab">오늘의 경기</button>
     <button id="tabRank" class="on" role="tab">순위</button>
     <button id="tabSim" role="tab">시뮬레이션</button>
     <button id="tabNews" role="tab">뉴스</button>
   </nav>
 
+  <div class="pane" id="paneGame">
+    <section>
+      <div class="shd"><h2>경기 일정</h2><span class="note" id="gameMsg"></span></div>
+      <div class="row" style="margin-top:0">
+        <button class="btn pri" id="bGames">경기 불러오기</button>
+        <button class="btn" id="bPrevDay">◀</button>
+        <button class="btn" id="bNextDay">▶</button>
+      </div>
+      <div id="gameRaw"></div>
+      <div class="gdate" id="gDate"></div>
+      <div id="gameList"></div>
+      <div id="gameDetail"></div>
+    </section>
+  </div>
+
   <div class="pane on" id="paneRank">
   <section>
-    <div class="shd"><h2>예상 순위</h2><span class="note" id="simNote"></span></div>
+    <div class="shd">
+      <h2 id="rankTitle">다음 시즌 예상</h2>
+      <span class="note" id="simNote"></span>
+    </div>
+    <div class="sub2tab">
+      <button id="subPred" class="on">예상 순위</button>
+      <button id="subNow">현재 순위</button>
+    </div>
     <div class="slist" id="tb"></div>
+    <div class="slist" id="tbNow" hidden></div>
     <div id="detail"></div>
   </section>
 
@@ -328,7 +527,7 @@ footer p{margin:0 0 6px}
 
     <section>
       <div class="shd"><h2>선수 잘함 지수</h2><span class="note" id="boostNote"></span></div>
-      <p class="hint">팀을 고르고 선수 지수를 올리거나 내리면 그 전력으로 시즌이 돌아갑니다. 100에 가까울수록 리그 최상위, 50이 리그 중간입니다.</p>
+      <p class="hint"><b>모든 지수는 100점 만점입니다.</b> 팀을 고르면 감독과 선수 전원이 나옵니다. 지수를 올리거나 내리면 그 전력으로 시즌이 다시 돌아갑니다. 50이 리그 중간, 100에 가까울수록 리그 최상위입니다.</p>
       <div class="chips" id="teamChips"></div>
       <div id="boostList"></div>
     </section>
@@ -339,6 +538,7 @@ footer p{margin:0 0 6px}
     <div class="shd"><h2>최신 소식</h2><span class="note" id="newsMsg"></span></div>
     <p class="hint">여러 매체에서 KBO 기사 제목을 모아옵니다. 선수 이름과 상황이 잡힌 기사는 오른쪽 반영 버튼 한 번으로 로스터에 적용되고, 나머지는 헤드라인으로 쭉 보여줍니다.</p>
     <div class="row"><button class="btn pri" id="bFeed">뉴스 불러오기</button></div>
+    <div class="chips" id="newsChips" style="margin-top:10px"></div>
     <div id="feed"></div>
   </section>
 
@@ -435,6 +635,12 @@ LG 박동원, FA 계약으로 KIA 이적"></textarea>
 var TEAMS = [{"key":"samsung","name":"삼성 라이온즈","short":"삼성","color":"#0B57A4","w":73,"l":47,"d":3,"players":[{"n":"원태인","r":"Won Tae-in","role":"SP","era":4.26,"whip":1.35,"ip":120.3,"so":101,"bb":25,"age":26,"t":"P"},{"n":"최원태","r":"Choi Won-tae","role":"SP","era":4.37,"whip":1.36,"ip":113.3,"so":106,"bb":37,"age":29,"t":"P"},{"n":"양창섭","r":"Yang Chang-seop","role":"SP","era":4.67,"whip":1.45,"ip":88.7,"so":68,"bb":30,"age":26,"t":"P"},{"n":"장찬희","r":"Jang Chan-hee","role":"SP","era":4.07,"whip":1.34,"ip":66.3,"so":50,"bb":28,"age":18,"t":"P"},{"n":"크리스 패댁","r":"Chris Paddack","role":"SP","era":2.55,"whip":0.87,"ip":49.3,"so":54,"bb":10,"age":30,"t":"P"},{"n":"김재윤","r":"Kim Jae-yoon","role":"CP","era":3.32,"whip":1.04,"ip":57.0,"so":60,"bb":24,"age":35,"t":"P"},{"n":"이승민","r":"Lee Seung-min","role":"RP","era":2.41,"whip":1.36,"ip":56.0,"so":49,"bb":27,"age":26,"t":"P"},{"n":"임기영","r":"Im Gi-yeong","role":"RP","era":4.63,"whip":1.31,"ip":46.7,"so":32,"bb":11,"age":33,"t":"P"},{"n":"배찬승","r":"Bae Chan-seung","role":"RP","era":2.68,"whip":1.78,"ip":37.0,"so":30,"bb":34,"age":20,"t":"P"},{"n":"이승현","r":"Lee Seung-hyun","role":"RP","era":5.94,"whip":1.62,"ip":36.3,"so":35,"bb":17,"age":24,"t":"P"},{"n":"김태훈","r":"Kim Tae-hoon","role":"RP","era":2.81,"whip":0.94,"ip":32.0,"so":23,"bb":7,"age":34,"t":"P"},{"n":"르윈 디아즈","r":"Lewin Diaz","avg":0.295,"obp":0.372,"slg":0.489,"ops":0.861,"pa":543,"hr":21,"rbi":106,"bb":60,"so":90,"age":29,"t":"H"},{"n":"최형우","r":"Choi Hyoung-woo","avg":0.321,"obp":0.411,"slg":0.492,"ops":0.903,"pa":499,"hr":16,"rbi":96,"bb":65,"so":85,"age":42,"t":"H"},{"n":"김지찬","r":"Kim Ji-chan","avg":0.327,"obp":0.417,"slg":0.377,"ops":0.794,"pa":476,"hr":0,"rbi":37,"bb":59,"so":36,"age":25,"t":"H"},{"n":"류지혁","r":"Ryu Ji-hyuk","avg":0.289,"obp":0.379,"slg":0.396,"ops":0.775,"pa":463,"hr":5,"rbi":58,"bb":50,"so":68,"age":32,"t":"H"},{"n":"구자욱","r":"Koo Ja-wook","avg":0.362,"obp":0.446,"slg":0.563,"ops":1.008,"pa":452,"hr":14,"rbi":93,"bb":58,"so":65,"age":33,"t":"H"},{"n":"김성윤","r":"Kim Seong-yoon","avg":0.305,"obp":0.381,"slg":0.392,"ops":0.773,"pa":405,"hr":3,"rbi":44,"bb":42,"so":41,"age":27,"t":"H"},{"n":"전병우","r":"Jeon Byeong-woo","avg":0.236,"obp":0.353,"slg":0.385,"ops":0.738,"pa":357,"hr":8,"rbi":48,"bb":38,"so":90,"age":33,"t":"H"},{"n":"박승규","r":"Park Seung-kyu","avg":0.282,"obp":0.401,"slg":0.477,"ops":0.878,"pa":319,"hr":10,"rbi":41,"bb":50,"so":45,"age":26,"t":"H"},{"n":"강민호","r":"Kang Min-ho","avg":0.269,"obp":0.365,"slg":0.446,"ops":0.811,"pa":288,"hr":10,"rbi":51,"bb":32,"so":60,"age":41,"t":"H"}],"prior":[0.608,0.521,0.549,0.427,0.465]},{"key":"kt","name":"KT 위즈","short":"KT","color":"#3C3C3C","w":71,"l":46,"d":3,"players":[{"n":"고영표","r":"Ko Young-pyo","role":"SP","era":3.8,"whip":1.16,"ip":139.7,"so":149,"bb":20,"age":34,"t":"P"},{"n":"소형준","r":"So Hyeong-jun","role":"SP","era":3.41,"whip":1.27,"ip":108.3,"so":85,"bb":19,"age":24,"t":"P"},{"n":"오원석","r":"Oh Won-seok","role":"SP","era":5.97,"whip":1.52,"ip":92.0,"so":88,"bb":30,"age":25,"t":"P"},{"n":"로건 앨런","r":"Logan Allen","role":"SP","era":3.07,"whip":1.34,"ip":67.3,"so":54,"bb":19,"age":29,"t":"P"},{"n":"스기모토 코키","r":"Sugimoto Koki","role":"SP","era":5.71,"whip":1.55,"ip":64.7,"so":65,"bb":22,"age":26,"t":"P"},{"n":"데이비스 대니얼","r":"Davis Daniel","role":"SP","era":2.88,"whip":1.36,"ip":25.0,"so":24,"bb":12,"age":29,"t":"P"},{"n":"박영현","r":"Park Yeong-hyun","role":"CP","era":2.63,"whip":1.3,"ip":54.7,"so":55,"bb":26,"age":22,"t":"P"},{"n":"손동현","r":"Son Dong-hyun","role":"RP","era":3.23,"whip":1.23,"ip":53.0,"so":42,"bb":24,"age":25,"t":"P"},{"n":"배제성","r":"Bae Je-seong","role":"RP","era":3.72,"whip":1.57,"ip":48.3,"so":42,"bb":28,"age":29,"t":"P"},{"n":"주권","r":"Ju Kwon","role":"RP","era":3.4,"whip":1.34,"ip":47.7,"so":20,"bb":17,"age":31,"t":"P"},{"n":"전용주","r":"Jeon Yong-ju","role":"RP","era":4.32,"whip":1.61,"ip":41.7,"so":41,"bb":31,"age":26,"t":"P"},{"n":"우규민","r":"Woo Kyu-min","role":"RP","era":2.72,"whip":1.21,"ip":36.3,"so":19,"bb":6,"age":41,"t":"P"},{"n":"최원준","r":"Choi Won-jun","avg":0.34,"obp":0.416,"slg":0.465,"ops":0.881,"pa":553,"hr":8,"rbi":62,"bb":60,"so":73,"age":29,"t":"H"},{"n":"김현수","r":"Kim Hyun-soo","avg":0.272,"obp":0.34,"slg":0.392,"ops":0.732,"pa":530,"hr":10,"rbi":78,"bb":46,"so":61,"age":38,"t":"H"},{"n":"샘 힐리어드","r":"Sam Hilliard","avg":0.295,"obp":0.363,"slg":0.554,"ops":0.917,"pa":523,"hr":32,"rbi":104,"bb":51,"so":150,"age":32,"t":"H"},{"n":"김상수","r":"Kim Sang-su","avg":0.283,"obp":0.378,"slg":0.328,"ops":0.706,"pa":425,"hr":1,"rbi":35,"bb":47,"so":55,"age":36,"t":"H"},{"n":"김민혁","r":"Kim Min-hyuck","avg":0.301,"obp":0.357,"slg":0.35,"ops":0.707,"pa":340,"hr":1,"rbi":35,"bb":24,"so":52,"age":30,"t":"H"},{"n":"허경민","r":"Heo Kyoung-min","avg":0.331,"obp":0.398,"slg":0.41,"ops":0.808,"pa":325,"hr":3,"rbi":33,"bb":22,"so":29,"age":36,"t":"H"},{"n":"안현민","r":"Ahn Hyun-min","avg":0.295,"obp":0.453,"slg":0.511,"ops":0.964,"pa":309,"hr":12,"rbi":49,"bb":53,"so":65,"age":23,"t":"H"},{"n":"한승택","r":"Han Seung-taek","avg":0.225,"obp":0.299,"slg":0.277,"ops":0.576,"pa":296,"hr":1,"rbi":28,"bb":26,"so":69,"age":32,"t":"H"},{"n":"권동진","r":"Kwon Dong-jin","avg":0.258,"obp":0.344,"slg":0.366,"ops":0.71,"pa":225,"hr":2,"rbi":27,"bb":24,"so":65,"age":27,"t":"H"}],"prior":[0.607,0.511,0.507,0.56,0.563]},{"key":"lg","name":"LG 트윈스","short":"LG","color":"#C30452","w":68,"l":55,"d":1,"players":[{"n":"임찬규","r":"Im Chan-kyu","role":"SP","era":4.14,"whip":1.38,"ip":139.0,"so":79,"bb":40,"age":33,"t":"P"},{"n":"앤더스 톨허스트","r":"Anders Tolhurst","role":"SP","era":4.22,"whip":1.24,"ip":134.3,"so":109,"bb":32,"age":26,"t":"P"},{"n":"손주영","r":"Son Ju-young","role":"SP","era":1.98,"whip":1.32,"ip":41.0,"so":44,"bb":26,"age":27,"t":"P"},{"n":"카를로스 카라스코","r":"Carlos Carrasco","role":"SP","era":3.47,"whip":0.85,"ip":36.3,"so":25,"bb":2,"age":39,"t":"P"},{"n":"김영우","r":"Kim Young-woo","role":"SP","era":4.36,"whip":1.55,"ip":43.3,"so":34,"bb":18,"age":21,"t":"P"},{"n":"이정용","r":"Yi Jung-yong","role":"RP","era":7.24,"whip":1.96,"ip":54.7,"so":25,"bb":23,"age":30,"t":"P"},{"n":"김진수","r":"Kim Jin-su","role":"RP","era":4.14,"whip":1.4,"ip":54.3,"so":34,"bb":19,"age":28,"t":"P"},{"n":"우강훈","r":"Woo Kang-hoon","role":"RP","era":4.72,"whip":1.43,"ip":47.7,"so":45,"bb":22,"age":23,"t":"P"},{"n":"박시원","r":"Park Si-won","role":"RP","era":4.4,"whip":1.56,"ip":45.0,"so":35,"bb":19,"age":20,"t":"P"},{"n":"김윤식","r":"Kim Yun-sik","role":"RP","era":5.01,"whip":1.64,"ip":32.3,"so":17,"bb":23,"age":26,"t":"P"},{"n":"배재준","r":"Bae Jae-june","role":"RP","era":9.45,"whip":1.8,"ip":26.7,"so":24,"bb":18,"age":31,"t":"P"},{"n":"오스틴 딘","r":"Austin Dean","avg":0.34,"obp":0.428,"slg":0.656,"ops":1.084,"pa":547,"hr":36,"rbi":115,"bb":66,"so":77,"age":32,"t":"H"},{"n":"박해민","r":"Park Hae-min","avg":0.282,"obp":0.366,"slg":0.354,"ops":0.72,"pa":495,"hr":4,"rbi":51,"bb":48,"so":56,"age":36,"t":"H"},{"n":"신민재","r":"Shin Min-jae","avg":0.262,"obp":0.344,"slg":0.282,"ops":0.626,"pa":398,"hr":0,"rbi":24,"bb":41,"so":51,"age":30,"t":"H"},{"n":"오지환","r":"Oh Ji-hwan","avg":0.231,"obp":0.313,"slg":0.355,"ops":0.668,"pa":389,"hr":9,"rbi":50,"bb":37,"so":82,"age":36,"t":"H"},{"n":"문보경","r":"Moon Bo-gyeong","avg":0.256,"obp":0.363,"slg":0.382,"ops":0.745,"pa":372,"hr":9,"rbi":55,"bb":55,"so":71,"age":26,"t":"H"},{"n":"박동원","r":"Park Dong-won","avg":0.225,"obp":0.331,"slg":0.388,"ops":0.719,"pa":370,"hr":12,"rbi":52,"bb":47,"so":82,"age":36,"t":"H"},{"n":"송찬의","r":"Song Chan-eui","avg":0.291,"obp":0.382,"slg":0.52,"ops":0.902,"pa":352,"hr":14,"rbi":59,"bb":29,"so":81,"age":27,"t":"H"},{"n":"구본혁","r":"Gu Bon-hyeok","avg":0.284,"obp":0.338,"slg":0.32,"ops":0.658,"pa":312,"hr":0,"rbi":23,"bb":21,"so":36,"age":29,"t":"H"},{"n":"문정빈","r":"Moon Jeong-bin","avg":0.259,"obp":0.339,"slg":0.541,"ops":0.88,"pa":248,"hr":16,"rbi":49,"bb":23,"so":75,"age":23,"t":"H"}],"prior":[0.553,0.603,0.535,0.606,0.613]},{"key":"kia","name":"KIA 타이거즈","short":"KIA","color":"#EA0029","w":66,"l":54,"d":2,"players":[{"n":"제임스 네일","r":"James Naile","role":"SP","era":3.66,"whip":1.18,"ip":152.7,"so":126,"bb":30,"age":33,"t":"P"},{"n":"애덤 올러","r":"Adam Oller","role":"SP","era":2.99,"whip":1.05,"ip":141.3,"so":154,"bb":47,"age":31,"t":"P"},{"n":"양현종","r":"Yang Hyeon-jong","role":"SP","era":4.25,"whip":1.44,"ip":106.0,"so":70,"bb":53,"age":38,"t":"P"},{"n":"김태형","r":"Kim Tae-hyeong","role":"SP","era":5.32,"whip":1.59,"ip":66.0,"so":42,"bb":28,"age":19,"t":"P"},{"n":"케이쇼 시라카와","r":"Keisho Shirakawa","role":"SP","era":4.91,"whip":1.44,"ip":66.0,"so":51,"bb":38,"age":25,"t":"P"},{"n":"이의리","r":"Lee Eui-lee","role":"SP","era":7.52,"whip":1.86,"ip":52.7,"so":58,"bb":45,"age":24,"t":"P"},{"n":"정해영","r":"Jung Hai-young","role":"CP","era":5.93,"whip":1.56,"ip":41.0,"so":33,"bb":15,"age":25,"t":"P"},{"n":"조상우","r":"Cho Sang-woo","role":"RP","era":2.88,"whip":1.38,"ip":50.0,"so":34,"bb":20,"age":32,"t":"P"},{"n":"성영탁","r":"Sung Yeong-tak","role":"RP","era":3.06,"whip":1.24,"ip":50.0,"so":38,"bb":13,"age":22,"t":"P"},{"n":"한재승","r":"Han Jae-seung","role":"RP","era":4.5,"whip":1.43,"ip":42.0,"so":26,"bb":22,"age":24,"t":"P"},{"n":"전상현","r":"Jeon Sang-hyun","role":"RP","era":2.93,"whip":0.94,"ip":27.7,"so":26,"bb":3,"age":30,"t":"P"},{"n":"곽도규","r":"Kwak Do-gyu","role":"RP","era":1.69,"whip":1.22,"ip":21.3,"so":23,"bb":10,"age":22,"t":"P"},{"n":"김도영","r":"Kim Do-yeong","avg":0.306,"obp":0.411,"slg":0.635,"ops":1.046,"pa":533,"hr":40,"rbi":99,"bb":76,"so":90,"age":22,"t":"H"},{"n":"김호령","r":"Kim Ho-ryung","avg":0.27,"obp":0.314,"slg":0.419,"ops":0.733,"pa":505,"hr":13,"rbi":61,"bb":30,"so":134,"age":34,"t":"H"},{"n":"박재현","r":"Park Jae-hyun","avg":0.293,"obp":0.332,"slg":0.466,"ops":0.798,"pa":486,"hr":16,"rbi":63,"bb":27,"so":94,"age":19,"t":"H"},{"n":"나성범","r":"Na Sung-bum","avg":0.299,"obp":0.377,"slg":0.55,"ops":0.927,"pa":485,"hr":27,"rbi":83,"bb":51,"so":129,"age":36,"t":"H"},{"n":"김선빈","r":"Kim Sun-bin","avg":0.274,"obp":0.376,"slg":0.337,"ops":0.713,"pa":451,"hr":1,"rbi":41,"bb":57,"so":43,"age":36,"t":"H"},{"n":"해럴드 카스트로","r":"Harold Castro","avg":0.328,"obp":0.365,"slg":0.556,"ops":0.921,"pa":334,"hr":15,"rbi":68,"bb":17,"so":48,"age":32,"t":"H"},{"n":"한준수","r":"Han Jun-su","avg":0.28,"obp":0.398,"slg":0.432,"ops":0.83,"pa":333,"hr":7,"rbi":34,"bb":47,"so":51,"age":27,"t":"H"},{"n":"박민","r":"Park Min","avg":0.209,"obp":0.279,"slg":0.301,"ops":0.58,"pa":186,"hr":3,"rbi":20,"bb":14,"so":32,"age":25,"t":"H"},{"n":"김태군","r":"Kim Tae-gun","avg":0.268,"obp":0.346,"slg":0.414,"ops":0.76,"pa":184,"hr":5,"rbi":22,"bb":12,"so":21,"age":36,"t":"H"}],"prior":[0.55,0.464,0.613,0.514,0.49]},{"key":"doosan","name":"두산 베어스","short":"두산","color":"#1A1A4B","w":62,"l":59,"d":4,"players":[{"n":"곽빈","r":"Gwak Been","role":"SP","era":2.31,"whip":1.06,"ip":148.0,"so":177,"bb":37,"age":27,"t":"P"},{"n":"잭 로그","r":"Zach Logue","role":"SP","era":3.86,"whip":1.26,"ip":137.7,"so":124,"bb":27,"age":30,"t":"P"},{"n":"최민석","r":"Choi Min-seok","role":"SP","era":2.69,"whip":1.27,"ip":133.7,"so":117,"bb":53,"age":20,"t":"P"},{"n":"최승용","r":"Choi Seung-yong","role":"SP","era":5.92,"whip":1.56,"ip":103.3,"so":75,"bb":38,"age":25,"t":"P"},{"n":"타카다 타쿠토","r":"Takada Takuto","role":"SP","era":3.89,"whip":1.32,"ip":37.0,"so":28,"bb":16,"age":23,"t":"P"},{"n":"이영하","r":"Lee Young-ha","role":"CP","era":3.72,"whip":1.24,"ip":55.7,"so":72,"bb":25,"age":28,"t":"P"},{"n":"김정우","r":"Kim Jeong-woo","role":"RP","era":1.89,"whip":1.03,"ip":52.3,"so":44,"bb":21,"age":27,"t":"P"},{"n":"김택연","r":"Kim Taek-yeon","role":"RP","era":2.36,"whip":1.26,"ip":42.0,"so":55,"bb":24,"age":21,"t":"P"},{"n":"박치국","r":"Park Chi-guk","role":"RP","era":4.81,"whip":1.68,"ip":39.3,"so":34,"bb":13,"age":28,"t":"P"},{"n":"이용찬","r":"Lee Yong-chan","role":"RP","era":4.5,"whip":1.25,"ip":36.0,"so":35,"bb":8,"age":37,"t":"P"},{"n":"박신지","r":"Park Shin-zi","role":"RP","era":5.56,"whip":1.44,"ip":34.0,"so":29,"bb":16,"age":27,"t":"P"},{"n":"박찬호","r":"Park Chan-ho","avg":0.286,"obp":0.357,"slg":0.38,"ops":0.737,"pa":523,"hr":5,"rbi":48,"bb":51,"so":71,"age":31,"t":"H"},{"n":"양의지","r":"Yang Eui-ji","avg":0.253,"obp":0.357,"slg":0.441,"ops":0.798,"pa":473,"hr":19,"rbi":69,"bb":52,"so":52,"age":39,"t":"H"},{"n":"정수빈","r":"Jung Soo-bin","avg":0.258,"obp":0.338,"slg":0.357,"ops":0.695,"pa":464,"hr":7,"rbi":42,"bb":46,"so":69,"age":35,"t":"H"},{"n":"김민석","r":"Kim Min-suk","avg":0.31,"obp":0.386,"slg":0.409,"ops":0.795,"pa":435,"hr":4,"rbi":44,"bb":44,"so":74,"age":22,"t":"H"},{"n":"박준순","r":"Park Jun-soon","avg":0.303,"obp":0.358,"slg":0.513,"ops":0.871,"pa":380,"hr":16,"rbi":58,"bb":23,"so":77,"age":20,"t":"H"},{"n":"안재석","r":"An Jae-seok","avg":0.26,"obp":0.318,"slg":0.431,"ops":0.749,"pa":366,"hr":10,"rbi":54,"bb":25,"so":61,"age":24,"t":"H"},{"n":"박지훈","r":"Park Ji-hoon","avg":0.266,"obp":0.345,"slg":0.339,"ops":0.684,"pa":273,"hr":1,"rbi":23,"bb":24,"so":44,"age":26,"t":"H"},{"n":"강승호","r":"Kang Seung-ho","avg":0.254,"obp":0.312,"slg":0.416,"ops":0.728,"pa":222,"hr":8,"rbi":34,"bb":10,"so":56,"age":32,"t":"H"},{"n":"조수행","r":"Jo Soo-haeng","avg":0.336,"obp":0.416,"slg":0.39,"ops":0.806,"pa":174,"hr":0,"rbi":17,"bb":18,"so":21,"age":33,"t":"H"}],"prior":[0.512,0.442,0.521,0.521,0.423]},{"key":"nc","name":"NC 다이노스","short":"NC","color":"#315288","w":56,"l":60,"d":2,"players":[{"n":"구창모","r":"Koo Chang-mo","role":"SP","era":4.08,"whip":1.28,"ip":134.7,"so":112,"bb":40,"age":29,"t":"P"},{"n":"토다 나츠키","r":"Toda Natsuki","role":"SP","era":4.99,"whip":1.54,"ip":124.3,"so":94,"bb":42,"age":26,"t":"P"},{"n":"라일리 톰슨","r":"Riley Thompson","role":"SP","era":2.84,"whip":1.05,"ip":107.7,"so":139,"bb":27,"age":30,"t":"P"},{"n":"송명기","r":"Song Myung-gi","role":"SP","era":5.11,"whip":1.62,"ip":24.7,"so":26,"bb":12,"age":26,"t":"P"},{"n":"김태경","r":"Kim Tae-gyeong","role":"SP","era":5.21,"whip":1.53,"ip":38.0,"so":31,"bb":21,"age":25,"t":"P"},{"n":"류진욱","r":"Ryu Jin-wook","role":"CP","era":8.58,"whip":1.91,"ip":28.3,"so":26,"bb":14,"age":29,"t":"P"},{"n":"천사민","r":"Chun Sa-min","role":"RP","era":3.88,"whip":1.35,"ip":55.7,"so":39,"bb":30,"age":27,"t":"P"},{"n":"김진호","r":"Kim Jin-ho","role":"RP","era":5.91,"whip":1.9,"ip":42.7,"so":37,"bb":45,"age":28,"t":"P"},{"n":"배재환","r":"Bae Jae-whan","role":"RP","era":4.89,"whip":1.54,"ip":35.0,"so":34,"bb":16,"age":31,"t":"P"},{"n":"손주환","r":"Son Ju-hwan","role":"RP","era":6.16,"whip":1.66,"ip":30.7,"so":35,"bb":18,"age":24,"t":"P"},{"n":"신영우","r":"Shin Yeong-woo","role":"RP","era":2.3,"whip":1.43,"ip":27.3,"so":44,"bb":29,"age":22,"t":"P"},{"n":"김주원","r":"Kim Ju-won","avg":0.291,"obp":0.373,"slg":0.453,"ops":0.826,"pa":527,"hr":18,"rbi":57,"bb":46,"so":69,"age":24,"t":"H"},{"n":"박민우","r":"Park Min-woo","avg":0.32,"obp":0.411,"slg":0.429,"ops":0.84,"pa":461,"hr":6,"rbi":59,"bb":55,"so":60,"age":33,"t":"H"},{"n":"박건우","r":"Park Kun-woo","avg":0.292,"obp":0.366,"slg":0.468,"ops":0.834,"pa":454,"hr":17,"rbi":67,"bb":50,"so":71,"age":36,"t":"H"},{"n":"이우성","r":"Lee Woo-sung","avg":0.304,"obp":0.349,"slg":0.401,"ops":0.75,"pa":399,"hr":6,"rbi":46,"bb":24,"so":60,"age":32,"t":"H"},{"n":"김형준","r":"Kim Hyung-jun","avg":0.244,"obp":0.326,"slg":0.423,"ops":0.749,"pa":334,"hr":13,"rbi":56,"bb":31,"so":103,"age":26,"t":"H"},{"n":"김휘집","r":"Kim Whee-jip","avg":0.265,"obp":0.372,"slg":0.471,"ops":0.843,"pa":244,"hr":9,"rbi":44,"bb":25,"so":42,"age":24,"t":"H"},{"n":"천재환","r":"Cheon Jae-hwan","avg":0.304,"obp":0.357,"slg":0.425,"ops":0.782,"pa":243,"hr":4,"rbi":25,"bb":13,"so":43,"age":32,"t":"H"},{"n":"권희동","r":"Kwon Hui-dong","avg":0.242,"obp":0.357,"slg":0.347,"ops":0.704,"pa":229,"hr":4,"rbi":28,"bb":34,"so":34,"age":35,"t":"H"},{"n":"최정원","r":"Choi Jeong-won","avg":0.283,"obp":0.357,"slg":0.309,"ops":0.666,"pa":221,"hr":0,"rbi":9,"bb":14,"so":40,"age":26,"t":"H"}],"prior":[0.483,0.514,0.43,0.528,0.475]},{"key":"hanwha","name":"한화 이글스","short":"한화","color":"#FC4E00","w":54,"l":65,"d":3,"players":[{"n":"류현진","r":"Ryu Hyun-jin","role":"SP","era":3.8,"whip":1.18,"ip":125.7,"so":104,"bb":17,"age":39,"t":"P"},{"n":"왕옌청","r":"Wang Yan-cheng","role":"SP","era":3.86,"whip":1.5,"ip":123.7,"so":96,"bb":53,"age":25,"t":"P"},{"n":"오언 화이트","r":"Owen White","role":"SP","era":3.38,"whip":1.22,"ip":114.3,"so":82,"bb":27,"age":27,"t":"P"},{"n":"박준영","r":"Park Jun-yeong","role":"SP","era":6.05,"whip":1.56,"ip":64.0,"so":56,"bb":37,"age":23,"t":"P"},{"n":"황준서","r":"Hwang Jun-seo","role":"SP","era":4.95,"whip":1.63,"ip":43.7,"so":45,"bb":26,"age":21,"t":"P"},{"n":"박상원","r":"Park Sang-won","role":"CP","era":4.8,"whip":1.4,"ip":50.7,"so":52,"bb":18,"age":32,"t":"P"},{"n":"이민우","r":"Lee Min-woo","role":"RP","era":4.53,"whip":1.55,"ip":53.7,"so":28,"bb":20,"age":33,"t":"P"},{"n":"조동욱","r":"Cho Dong-uk","role":"RP","era":3.91,"whip":1.61,"ip":48.3,"so":51,"bb":19,"age":21,"t":"P"},{"n":"장유호","r":"Jang Yoo-ho","role":"RP","era":4.19,"whip":1.4,"ip":34.3,"so":24,"bb":17,"age":26,"t":"P"},{"n":"브루스 치머먼","r":"Bruce Zimmerman","role":"SP","era":14.26,"whip":2.66,"ip":17.7,"so":13,"bb":8,"age":31,"t":"P"},{"n":"문현빈","r":"Moon Hyun-bin","avg":0.306,"obp":0.385,"slg":0.472,"ops":0.857,"pa":535,"hr":14,"rbi":70,"bb":56,"so":67,"age":22,"t":"H"},{"n":"노시환","r":"Roh Si-hwan","avg":0.28,"obp":0.358,"slg":0.509,"ops":0.867,"pa":515,"hr":27,"rbi":89,"bb":46,"so":135,"age":25,"t":"H"},{"n":"요나단 페라자","r":"Yonathan Perlaza","avg":0.294,"obp":0.411,"slg":0.513,"ops":0.924,"pa":508,"hr":20,"rbi":66,"bb":83,"so":96,"age":27,"t":"H"},{"n":"강백호","r":"Kang Baek-ho","avg":0.289,"obp":0.357,"slg":0.552,"ops":0.909,"pa":473,"hr":30,"rbi":103,"bb":45,"so":97,"age":27,"t":"H"},{"n":"심우준","r":"Sim Woo-jun","avg":0.267,"obp":0.34,"slg":0.35,"ops":0.69,"pa":384,"hr":6,"rbi":41,"bb":34,"so":61,"age":31,"t":"H"},{"n":"허인서","r":"Heo In-seo","avg":0.29,"obp":0.361,"slg":0.497,"ops":0.858,"pa":377,"hr":18,"rbi":65,"bb":30,"so":110,"age":23,"t":"H"},{"n":"김태연","r":"Kim Tae-yean","avg":0.275,"obp":0.352,"slg":0.453,"ops":0.805,"pa":376,"hr":12,"rbi":38,"bb":33,"so":67,"age":29,"t":"H"},{"n":"이도윤","r":"Lee Do-yun","avg":0.264,"obp":0.306,"slg":0.345,"ops":0.651,"pa":363,"hr":2,"rbi":35,"bb":18,"so":52,"age":29,"t":"H"}],"prior":[0.454,0.593,0.465,0.42,0.324]},{"key":"lotte","name":"롯데 자이언츠","short":"롯데","color":"#0B2E5E","w":52,"l":66,"d":2,"players":[{"n":"엘빈 로드리게스","r":"Elvin Rodriguez","role":"SP","era":4.35,"whip":1.38,"ip":138.7,"so":156,"bb":51,"age":28,"t":"P"},{"n":"김진욱","r":"Kim Jin-uk","role":"SP","era":3.9,"whip":1.31,"ip":129.3,"so":112,"bb":45,"age":24,"t":"P"},{"n":"제레미 비즐리","r":"Jeremy Beasley","role":"SP","era":4.68,"whip":1.39,"ip":127.0,"so":134,"bb":36,"age":30,"t":"P"},{"n":"나균안","r":"Na Gyun-an","role":"SP","era":4.03,"whip":1.43,"ip":120.7,"so":104,"bb":38,"age":28,"t":"P"},{"n":"박세웅","r":"Park Se-woong","role":"SP","era":5.01,"whip":1.51,"ip":120.3,"so":106,"bb":42,"age":30,"t":"P"},{"n":"최준용","r":"Choi Jun-yong","role":"CP","era":4.33,"whip":1.48,"ip":52.0,"so":54,"bb":24,"age":24,"t":"P"},{"n":"현도훈","r":"Hyeon Do-hoon","role":"RP","era":4.82,"whip":1.39,"ip":46.7,"so":32,"bb":26,"age":33,"t":"P"},{"n":"박정민","r":"Park Jeong-min","role":"RP","era":3.94,"whip":1.42,"ip":45.7,"so":51,"bb":34,"age":22,"t":"P"},{"n":"김원중","r":"Kim Won-jung","role":"RP","era":5.11,"whip":1.57,"ip":44.0,"so":32,"bb":19,"age":33,"t":"P"},{"n":"이이무라 쇼타","r":"Iimura Shota","role":"RP","era":6.75,"whip":1.46,"ip":24.0,"so":19,"bb":2,"age":28,"t":"P"},{"n":"빅터 레이예스","r":"Victor Reyes","avg":0.347,"obp":0.401,"slg":0.508,"ops":0.909,"pa":526,"hr":14,"rbi":87,"bb":43,"so":59,"age":31,"t":"H"},{"n":"전민재","r":"Jeon Min-jae","avg":0.274,"obp":0.323,"slg":0.385,"ops":0.708,"pa":425,"hr":8,"rbi":58,"bb":26,"so":84,"age":27,"t":"H"},{"n":"황성빈","r":"Hwang Seong-bin","avg":0.29,"obp":0.337,"slg":0.373,"ops":0.71,"pa":407,"hr":0,"rbi":27,"bb":23,"so":58,"age":28,"t":"H"},{"n":"고승민","r":"Go Seung-min","avg":0.28,"obp":0.334,"slg":0.479,"ops":0.813,"pa":393,"hr":16,"rbi":66,"bb":30,"so":77,"age":26,"t":"H"},{"n":"한동희","r":"Han Dong-hui","avg":0.299,"obp":0.364,"slg":0.516,"ops":0.88,"pa":357,"hr":18,"rbi":62,"bb":29,"so":59,"age":27,"t":"H"},{"n":"나승엽","r":"Na Seung-yeup","avg":0.274,"obp":0.358,"slg":0.394,"ops":0.752,"pa":335,"hr":6,"rbi":43,"bb":40,"so":51,"age":24,"t":"H"},{"n":"노진혁","r":"No Jin-hyuk","avg":0.222,"obp":0.296,"slg":0.36,"ops":0.656,"pa":217,"hr":5,"rbi":27,"bb":20,"so":45,"age":37,"t":"H"},{"n":"전준우","r":"Jeon Jun-woo","avg":0.218,"obp":0.266,"slg":0.282,"ops":0.548,"pa":203,"hr":2,"rbi":15,"bb":13,"so":30,"age":40,"t":"H"},{"n":"장두성","r":"Jang Du-seong","avg":0.265,"obp":0.302,"slg":0.298,"ops":0.6,"pa":195,"hr":0,"rbi":17,"bb":8,"so":40,"age":26,"t":"H"}],"prior":[0.441,0.478,0.471,0.472,0.457]},{"key":"ssg","name":"SSG 랜더스","short":"SSG","color":"#CE0E2D","w":53,"l":68,"d":5,"players":[{"n":"김건우","r":"Kim Kun-woo","role":"SP","era":6.01,"whip":1.73,"ip":109.3,"so":93,"bb":70,"age":24,"t":"P"},{"n":"최민준","r":"Choi Min-jun","role":"SP","era":4.75,"whip":1.44,"ip":94.7,"so":70,"bb":46,"age":27,"t":"P"},{"n":"다케다 쇼타","r":"Takeda Shota","role":"SP","era":7.77,"whip":1.87,"ip":90.3,"so":71,"bb":42,"age":33,"t":"P"},{"n":"김민준","r":"Kim Min-jun","role":"SP","era":3.38,"whip":1.2,"ip":66.7,"so":49,"bb":29,"age":20,"t":"P"},{"n":"페드로 아빌라","r":"Pedro Avila","role":"SP","era":1.4,"whip":1.03,"ip":58.0,"so":58,"bb":18,"age":29,"t":"P"},{"n":"김민","r":"Kim Min","role":"SP","era":3.75,"whip":1.42,"ip":57.7,"so":62,"bb":30,"age":27,"t":"P"},{"n":"조병현","r":"Jo Byeong-hyeon","role":"CP","era":2.55,"whip":1.18,"ip":49.3,"so":63,"bb":26,"age":24,"t":"P"},{"n":"문승원","r":"Moon Seung-won","role":"RP","era":3.4,"whip":1.35,"ip":55.7,"so":24,"bb":28,"age":36,"t":"P"},{"n":"이로운","r":"Lee Ro-un","role":"RP","era":5.96,"whip":1.54,"ip":51.3,"so":52,"bb":28,"age":21,"t":"P"},{"n":"전영준","r":"Jeon Young-jun","role":"RP","era":5.72,"whip":1.43,"ip":50.3,"so":58,"bb":28,"age":24,"t":"P"},{"n":"박시후","r":"Park Si-hoo","role":"RP","era":6.43,"whip":1.62,"ip":42.0,"so":36,"bb":20,"age":25,"t":"P"},{"n":"이근욱","r":"Lee Geun-wook","role":"RP","era":3.26,"whip":1.19,"ip":38.7,"so":34,"bb":15,"age":31,"t":"P"},{"n":"박성한","r":"Park Seong-han","avg":0.333,"obp":0.427,"slg":0.425,"ops":0.852,"pa":548,"hr":4,"rbi":63,"bb":77,"so":75,"age":28,"t":"H"},{"n":"정준재","r":"Jeong Jun-jae","avg":0.271,"obp":0.344,"slg":0.337,"ops":0.681,"pa":524,"hr":1,"rbi":38,"bb":49,"so":76,"age":23,"t":"H"},{"n":"최지훈","r":"Choi Ji-hoon","avg":0.241,"obp":0.297,"slg":0.395,"ops":0.692,"pa":504,"hr":12,"rbi":51,"bb":35,"so":80,"age":29,"t":"H"},{"n":"김재환","r":"Kim Jae-hwan","avg":0.225,"obp":0.342,"slg":0.416,"ops":0.758,"pa":459,"hr":21,"rbi":66,"bb":66,"so":132,"age":37,"t":"H"},{"n":"기예르모 에레디아","r":"Guillermo Heredia","avg":0.285,"obp":0.337,"slg":0.474,"ops":0.811,"pa":427,"hr":17,"rbi":84,"bb":25,"so":69,"age":35,"t":"H"},{"n":"조형우","r":"Cho Hyeong-woo","avg":0.257,"obp":0.316,"slg":0.401,"ops":0.717,"pa":345,"hr":8,"rbi":37,"bb":25,"so":61,"age":24,"t":"H"},{"n":"전의산","r":"Jeon Ui-san","avg":0.267,"obp":0.327,"slg":0.458,"ops":0.785,"pa":260,"hr":10,"rbi":44,"bb":21,"so":82,"age":25,"t":"H"},{"n":"안상현","r":"An Sang-hyun","avg":0.235,"obp":0.319,"slg":0.326,"ops":0.645,"pa":218,"hr":3,"rbi":19,"bb":20,"so":59,"age":29,"t":"H"},{"n":"한유섬","r":"Han Yoo-seom","avg":0.212,"obp":0.33,"slg":0.263,"ops":0.593,"pa":186,"hr":2,"rbi":13,"bb":25,"so":41,"age":37,"t":"H"}],"prior":[0.438,0.536,0.507,0.539,0.629]},{"key":"kiwoom","name":"키움 히어로즈","short":"키움","color":"#7A0A1E","w":45,"l":80,"d":3,"players":[{"n":"라울 알칸타라","r":"Raul Alcantara","role":"SP","era":3.78,"whip":1.09,"ip":143.0,"so":127,"bb":17,"age":33,"t":"P"},{"n":"박준현","r":"Park Jun-hyun","role":"SP","era":5.28,"whip":1.75,"ip":76.7,"so":80,"bb":65,"age":19,"t":"P"},{"n":"가나쿠보 유토","r":"Kanakubo Yuto","role":"SP","era":4.53,"whip":1.49,"ip":43.7,"so":48,"bb":14,"age":26,"t":"P"},{"n":"박지성","r":"Park Ji-sung","role":"SP","era":5.31,"whip":1.67,"ip":39.0,"so":27,"bb":23,"age":19,"t":"P"},{"n":"조영건","r":"Cho Young-gun","role":"SP","era":5.08,"whip":1.4,"ip":33.7,"so":22,"bb":8,"age":27,"t":"P"},{"n":"원종현","r":"Won Jong-hyan","role":"CP","era":5.8,"whip":1.56,"ip":45.0,"so":33,"bb":15,"age":39,"t":"P"},{"n":"전준표","r":"Jhun Jun-pyo","role":"RP","era":4.57,"whip":1.8,"ip":43.3,"so":27,"bb":39,"age":21,"t":"P"},{"n":"박진형","r":"Park Jin-hyung","role":"RP","era":4.5,"whip":1.59,"ip":34.0,"so":25,"bb":16,"age":32,"t":"P"},{"n":"정다훈","r":"Jung Da-hun","role":"RP","era":6.41,"whip":1.91,"ip":26.7,"so":15,"bb":18,"age":20,"t":"P"},{"n":"김선기","r":"Kim Seon-gi","role":"RP","era":5.66,"whip":1.45,"ip":20.7,"so":11,"bb":11,"age":35,"t":"P"},{"n":"매튜 데이비슨","r":"Matthew Davidson","avg":0.283,"obp":0.352,"slg":0.478,"ops":0.829,"pa":449,"hr":18,"rbi":74,"bb":22,"so":115,"age":35,"t":"H"},{"n":"안치홍","r":"An Chi-hong","avg":0.264,"obp":0.345,"slg":0.37,"ops":0.715,"pa":443,"hr":9,"rbi":53,"bb":47,"so":63,"age":36,"t":"H"},{"n":"서건창","r":"Seo Geon-chang","avg":0.313,"obp":0.403,"slg":0.402,"ops":0.805,"pa":420,"hr":3,"rbi":32,"bb":46,"so":40,"age":37,"t":"H"},{"n":"김건희","r":"Kim Gun-hee","avg":0.272,"obp":0.326,"slg":0.4,"ops":0.726,"pa":398,"hr":8,"rbi":50,"bb":29,"so":101,"age":21,"t":"H"},{"n":"박찬혁","r":"Park Chan-hyeok","avg":0.23,"obp":0.324,"slg":0.351,"ops":0.675,"pa":289,"hr":8,"rbi":28,"bb":27,"so":73,"age":23,"t":"H"},{"n":"권혁빈","r":"Gwon Hyuk-bin","avg":0.236,"obp":0.285,"slg":0.28,"ops":0.565,"pa":276,"hr":0,"rbi":22,"bb":12,"so":68,"age":20,"t":"H"},{"n":"김웅빈","r":"Kim Woong-bin","avg":0.245,"obp":0.336,"slg":0.39,"ops":0.726,"pa":274,"hr":8,"rbi":25,"bb":27,"so":65,"age":30,"t":"H"},{"n":"추재현","r":"Choo Jae-hyun","avg":0.304,"obp":0.382,"slg":0.416,"ops":0.798,"pa":246,"hr":4,"rbi":18,"bb":22,"so":42,"age":27,"t":"H"},{"n":"케스톤 히우라","r":"Keston Hiura","avg":0.249,"obp":0.336,"slg":0.399,"ops":0.735,"pa":244,"hr":8,"rbi":33,"bb":23,"so":74,"age":30,"t":"H"}],"prior":[0.36,0.336,0.403,0.411,0.563]}];
 
 var LG_ERA = 4.69, LG_OPS = 0.740;
+/* 감독. 야구 감독의 승수 기여는 실증적으로 연 1~3승 수준이라 폭을 ±2승으로 묶는다 */
+var MANAGERS = {
+  samsung:"박진만", kt:"이강철", lg:"염경엽", kia:"이범호", doosan:"김원형",
+  nc:"이호준", hanwha:"김경문", lotte:"김태형", ssg:"이숭용", kiwoom:"설종진"
+};
+var MGR_SWING = 2.0;   /* 지수 0~100이 만드는 최대 승수 차이의 절반 */
 /* 2016~2026 백테스트로 고른 값: 직전 5시즌을 0.55씩 감쇠 가중, 평균으로 0.60 회귀 */
 var PRIOR_W = [1, 0.55, 0.3025, 0.1664, 0.0915];
 var PRIOR_LAMBDA = 0.60, ROSTER_W = 0.40, LOSS_W = 0.75, TIE_RATE = 0.021;
@@ -486,11 +692,89 @@ function applyStats(){
   });
 }
 function teamOf(k){ for(var i=0;i<TEAMS.length;i++) if(TEAMS[i].key===k) return TEAMS[i]; }
+/* 업데이트로 받아온 최신 전적이 있으면 그걸 쓴다 */
+function recOf(t){
+  var r = state.teamRec && state.teamRec[t.key];
+  return (r && typeof r.w==="number") ? r : {w:t.w, l:t.l, d:t.d};
+}
 function games(t){ return t.w+t.l+t.d; }
 function scaleOf(p){ return 144/games(teamOf(p.home)); }
 function clamp(v,a,b){ return v<a?a:v>b?b:v; }
 function f3(x){ return x.toFixed(3).replace(/^0/,""); }
 function pc(x){ return (x*100).toFixed(1)+"%"; }
+
+/* ---------- 움직임 헬퍼 ---------- */
+var CALM = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function anim(el, cls){
+  if(!el || CALM) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;          /* 애니메이션을 처음부터 다시 */
+  el.classList.add(cls);
+}
+/* 막대를 0에서 목표치까지 늘린다 */
+function grow(el, pct, delay){
+  var w=Math.max(0, Math.min(100, pct)).toFixed(1)+"%";
+  if(!el) return;
+  if(CALM){ el.style.width=w; return; }
+  el.style.width="0%";
+  el.style.transitionDelay=(delay||0)+"ms";
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){ el.style.width=w; });
+  });
+}
+/* 숫자를 굴려서 올린다 */
+function countUp(el, to, fmt, ms){
+  if(!el) return;
+  var f = fmt || function(v){ return v.toFixed(1); };
+  if(CALM){ el.textContent=f(to); return; }
+  var from = parseFloat(String(el.textContent).replace(/[^0-9.\-]/g,""));
+  if(!isFinite(from)) from = 0;
+  var t0=null, dur=ms||620;
+  function step(t){
+    if(t0===null) t0=t;
+    var k=Math.min(1,(t-t0)/dur);
+    var e=1-Math.pow(1-k,3);
+    el.textContent=f(from+(to-from)*e);
+    if(k<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+/* 순서가 바뀐 표 줄이 제자리로 미끄러지게 (FLIP) */
+function flip(container, sel){
+  if(!container || CALM) return function(){};
+  var before={};
+  Array.prototype.forEach.call(container.querySelectorAll(sel||"tr"), function(el){
+    var k=el.getAttribute("data-k"); if(k) before[k]=el.getBoundingClientRect().top;
+  });
+  return function(){
+    Array.prototype.forEach.call(container.querySelectorAll(sel||"tr"), function(el){
+      var k=el.getAttribute("data-k"); if(!k || before[k]===undefined) return;
+      var d=before[k]-el.getBoundingClientRect().top;
+      if(!d) return;
+      el.style.transition="none";
+      el.style.transform="translateY("+d+"px)";
+      requestAnimationFrame(function(){
+        el.style.transition="transform .55s var(--ease)";
+        el.style.transform="";
+      });
+    });
+  };
+}
+/* 모든 버튼에 잔물결 */
+document.addEventListener("click", function(e){
+  if(CALM) return;
+  var b=e.target && e.target.closest ? e.target.closest("button") : null;
+  if(!b || b.disabled) return;
+  var r=b.getBoundingClientRect(), d=Math.max(r.width, r.height);
+  var s2=document.createElement("span");
+  s2.className="rip";
+  s2.style.width=s2.style.height=d+"px";
+  s2.style.left=(e.clientX-r.left-d/2)+"px";
+  s2.style.top=(e.clientY-r.top-d/2)+"px";
+  b.appendChild(s2);
+  setTimeout(function(){ if(s2.parentNode) s2.parentNode.removeChild(s2); }, 640);
+}, true);
+
 function k9(p){ return p.ip ? p.so/p.ip*9 : 0; }
 function bb9(p){ return p.ip ? p.bb/p.ip*9 : 0; }
 function bbk(p){ return p.so ? p.bb/p.so : 0; }
@@ -525,6 +809,7 @@ function buildDist(pool, axes){
 }
 var DIST_P = [], DIST_H = [], WAR_P = [], WAR_H = [];
 function rebuildPools(){
+  bumpModel();
   PP = ALLP.filter(function(p){ return p.t==="P" && p.ip>=20; });
   HP = ALLP.filter(function(p){ return p.t==="H" && p.pa>=100; });
   DIST_P = buildDist(PP, AX_P); DIST_H = buildDist(HP, AX_H);
@@ -543,7 +828,7 @@ function axesOf(p){
 
 /* ---------- 상태 ---------- */
 var CID = Math.random().toString(36).slice(2,10);
-var state = { out:{}, moves:{}, stats:{}, roles:{}, ord:{}, boost:{}, custom:[], myTeam:"", news:[], feed:[], stamp:"", statStamp:"", updatedAt:0 };
+var state = { out:{}, moves:{}, stats:{}, roles:{}, ord:{}, boost:{}, mgr:{}, teamRec:{}, custom:[], myTeam:"", news:[], feed:[], feedTeam:{}, recent:{}, hist:{}, stamp:"", statStamp:"", updatedAt:0 };
 var sel=null, selP=null, last=null, sims=6000;
 var dbNs=null, sampleNs=null;
 var HOSTED = !!(window.claude && typeof window.claude.use === "function");
@@ -564,6 +849,11 @@ function adopt(o){
   state.roles = o.roles || {};
   state.ord = o.ord || {};
   state.boost = o.boost || {};
+  state.mgr = o.mgr || {};
+  state.teamRec = o.teamRec || {};
+  state.feedTeam = o.feedTeam || {};
+  state.recent = o.recent || {};
+  state.hist = o.hist || {};
   state.custom = o.custom || [];
   mountCustom();
   state.myTeam = o.myTeam || "";
@@ -577,16 +867,20 @@ function loadLocal(){ try{ adopt(JSON.parse(localStorage.getItem("kbo27b")||"nul
 function saveLocal(){
   try{ localStorage.setItem("kbo27b", JSON.stringify({
     out:state.out, moves:state.moves, stats:state.stats, roles:state.roles, ord:state.ord,
-    boost:state.boost, custom:state.custom, myTeam:state.myTeam, news:state.news, feed:(state.feed||[]).slice(0,40),
+    boost:state.boost, mgr:state.mgr, teamRec:state.teamRec, feedTeam:state.feedTeam,
+    recent:state.recent, hist:state.hist,
+    custom:state.custom, myTeam:state.myTeam, news:state.news, feed:(state.feed||[]).slice(0,40),
     stamp:state.stamp, statStamp:state.statStamp })); }catch(e){}
 }
 function touch(){
+  bumpModel();
   state.updatedAt = Date.now(); saveLocal();
   if(dbNs){
     clearTimeout(touch._t);
     touch._t = setTimeout(function(){
       try{ dbNs.doc("state/main").set({ out:state.out, moves:state.moves, stats:state.stats,
-        roles:state.roles, ord:state.ord, boost:state.boost, custom:state.custom, myTeam:state.myTeam,
+        roles:state.roles, ord:state.ord, boost:state.boost, mgr:state.mgr,
+        teamRec:state.teamRec, custom:state.custom, myTeam:state.myTeam,
         news:state.news, stamp:state.stamp,
         statStamp:state.statStamp, updatedAt:state.updatedAt, by:CID }); }catch(e){}
     }, 800);
@@ -650,8 +944,12 @@ function computeAll(){
       if(lv===1) lost += Math.max(0, effWar(p));
       else if(lv===2) lost += Math.max(0, effWar(p))*0.5;
     });
-    var pct = (1-ROSTER_W)*prior + ROSTER_W*rosterPct - LOSS_W*lost/144;
-    return { key:t.key, talent:clamp(pct,0.28,0.72), war:wars[i],
+    var mg = (typeof state.mgr[t.key]==="number" ? state.mgr[t.key] : 50);
+    var mgWins = (mg - 50)/50 * MGR_SWING;
+    var pct = (1-ROSTER_W)*prior + ROSTER_W*rosterPct - LOSS_W*lost/144 + mgWins/144;
+    var rpct = rosterPct - LOSS_W*lost/144 + mgWins/144;   /* 과거 시즌을 뺀 올해 전력 */
+    return { key:t.key, talent:clamp(pct,0.28,0.72), rpct:clamp(rpct,0.28,0.72),
+      war:wars[i], mgWins:mgWins,
       rot:U.rot[i], pen:U.pen[i], off:U.off[i], dep:U.dep[i] };
   });
 }
@@ -697,6 +995,7 @@ function simulate(pv,n){
   });
 }
 function run(){
+  bumpModel();
   var m=computeAll(), by={};
   m.forEach(function(x){ by[x.key]=x; });
   last = simulate(TEAMS.map(function(t){ return by[t.key].talent; }), sims);
@@ -712,9 +1011,91 @@ function inkOn(hex){
 }
 
 /* ---------- 순위 ---------- */
+function wpNow(t){ var r=recOf(t); return r.w/(r.w+r.l); }
 function rank26(k){
-  var s=TEAMS.slice().sort(function(a,b){ return b.w/(b.w+b.l)-a.w/(a.w+a.l); });
+  var s=TEAMS.slice().sort(function(a,b){ return wpNow(b)-wpNow(a); });
   for(var i=0;i<s.length;i++) if(s[i].key===k) return i+1;
+}
+var rankMode="pred";
+var rowsNow={};
+function renderNow(){
+  var list=TEAMS.slice().sort(function(a,b){ return wpNow(b)-wpNow(a); });
+  var top=recOf(list[0]);
+  var box=document.getElementById("tbNow");
+  list.forEach(function(t,i){
+    var r=recOf(t), el=rowsNow[t.key];
+    if(!el){
+      el=document.createElement("div");
+      el.className="si"; el.dataset.k=t.key; el.tabIndex=0; el.setAttribute("role","button");
+      el.innerHTML='<div class="rk num"></div><div><span class="nm"></span></div>'
+        +'<div class="rec num"></div><div class="sub2"></div><div class="sub3 num"></div>';
+      var nmEl=el.querySelector(".nm");
+      nmEl.style.background=t.color; nmEl.style.color=inkOn(t.color);
+      el.addEventListener("click", function(){
+        sel=(sel===t.key?null:t.key); render(); renderNow(); renderDetail();
+      });
+      el.style.setProperty("--i", i);
+      el.classList.add("rise");
+      rowsNow[t.key]=el;
+    }
+    var c=el.children;
+    el.querySelector(".nm").textContent = t.name + (state.myTeam===t.key ? " ★" : "");
+    var oldF=el.querySelector(".frm"); if(oldF) oldF.parentNode.removeChild(oldF);
+    var rc=(state.recent||{})[t.key];
+    if(rc && rc.length){
+      var fr=document.createElement("span"); fr.className="frm";
+      fr.title="최근 "+rc.length+"경기 (오른쪽이 최신)";
+      rc.forEach(function(x, q){
+        var b2=document.createElement("i");
+        b2.className = x.r==="승" ? "w" : (x.r==="패" ? "l" : "d");
+        b2.textContent = x.r;
+        b2.title = x.ymd.slice(5).replace("-",".")+" vs "+teamOf(x.vs).short+" "+x.s+" "+x.r;
+        b2.style.animationDelay=(i*40+q*45)+"ms";
+        fr.appendChild(b2);
+      });
+      c[1].appendChild(fr);
+    }
+    c[0].textContent=i+1;
+    var gb=((top.w-r.w)+(r.l-top.l))/2;
+    c[2].textContent=r.w+"-"+r.d+"-"+r.l;
+    var em=document.createElement("em");
+    em.textContent = gb<0.05 ? "선두" : gb.toFixed(1)+"차";
+    c[2].appendChild(em);
+    c[3].textContent="";
+    var a1=document.createElement("span"); a1.className="num"; a1.textContent="승률 "+f3(wpNow(t));
+    var a2=document.createElement("span"); a2.className="num"; a2.textContent=(r.w+r.l+r.d)+"경기";
+    var left=144-(r.w+r.l+r.d);
+    var a3=document.createElement("span"); a3.className="fl";
+    a3.textContent = left>0 ? left+"경기 남음" : "시즌 종료";
+    c[3].appendChild(a1); c[3].appendChild(a2); c[3].appendChild(a3);
+    c[4].textContent="";
+    if(last){
+      var order=last.slice().sort(function(a,b){ return a.avg-b.avg; });
+      var predRank=0;
+      for(var q=0;q<order.length;q++) if(order[q].key===t.key) predRank=q+1;
+      var d=(i+1)-predRank;
+      var mv=document.createElement("span");
+      mv.className = d>0?"up":d<0?"dn":"fl";
+      mv.textContent = d>0 ? "내년 예상 "+predRank+"위 ▲"+d
+        : d<0 ? "내년 예상 "+predRank+"위 ▼"+(-d) : "내년도 "+predRank+"위";
+      c[4].appendChild(mv);
+    }
+    el.className="si"+(t.key===sel?" on":"")+(i===4?" cut":"");
+    box.appendChild(el);
+  });
+}
+function showRank(mode){
+  rankMode=mode;
+  var pred = mode==="pred";
+  document.getElementById("subPred").className = pred?"on":"";
+  document.getElementById("subNow").className = pred?"":"on";
+  document.getElementById("tb").hidden = !pred;
+  document.getElementById("tbNow").hidden = pred;
+  document.getElementById("rankTitle").textContent = pred ? "다음 시즌 예상" : "2026 현재 순위";
+  document.getElementById("simNote").textContent = pred
+    ? sims.toLocaleString()+"회 시뮬레이션"
+    : "기록 " + (state.statStamp || "2026.09.10") + " 기준";
+  if(!pred) renderNow();
 }
 var rows={};
 function render(){
@@ -737,6 +1118,8 @@ function render(){
       var nm=el.querySelector(".nm");
       nm.style.background=t.color;
       nm.style.color=inkOn(t.color);
+      el.style.setProperty("--i", i);
+      el.classList.add("rise");
       rows[r.key]=el;
     }
     var c=el.children, rec=c[2], s2=c[3], s3=c[4];
@@ -757,10 +1140,13 @@ function render(){
       });
     s3.textContent="";
     var tr=document.createElement("span"); tr.className="track";
-    var fi=document.createElement("i"); fi.style.width=Math.max(r.ps*100,3).toFixed(1)+"%";
+    var fi=document.createElement("i");
     tr.appendChild(fi); s3.appendChild(tr);
+    grow(fi, Math.max(r.ps*100,3), 60+i*45);
     s3.appendChild(document.createTextNode("가을 "+pc(r.ps)));
-    el.className="si"+(r.key===sel?" on":"")+(i===4?" cut":"");
+    var was=el.className;
+    el.className="si"+(r.key===sel?" on":"")+(i===4?" cut":"")
+      +(was.indexOf("rise")>=0?" rise":"");
     tb.appendChild(el);
   });
 
@@ -769,10 +1155,11 @@ function render(){
     var d=y-e.getBoundingClientRect().top; if(!d) return;
     e.style.transition="none"; e.style.transform="translateY("+d+"px)";
     requestAnimationFrame(function(){
-      e.style.transition="transform .45s ease"; e.style.transform="";
+      e.style.transition="transform .6s var(--ease)"; e.style.transform="";
     });
   });
-  document.getElementById("simNote").textContent=sims.toLocaleString()+"회 시뮬레이션";
+  if(rankMode==="pred") document.getElementById("simNote").textContent=sims.toLocaleString()+"회 시뮬레이션";
+  if(rankMode==="now") renderNow();
   heatmap(list);
 }
 
@@ -834,6 +1221,10 @@ function radar(p){
   poly.setAttribute("stroke","var(--accent)");
   poly.setAttribute("stroke-width","1.4");
   poly.setAttribute("stroke-linejoin","round");
+  if(!CALM){
+    poly.style.transformOrigin=C+"px "+C+"px";
+    poly.style.animation="radarIn .75s var(--ease2) both";
+  }
   svg.appendChild(poly);
   for(i=0;i<5;i++){
     var q=pt(i,R+12), tx=document.createElementNS(ns,"text");
@@ -938,7 +1329,7 @@ function evalPlayer(p){
       : p.age<=31 ? p.age+"세로 전성기 구간이다. "
       : p.age<=35 ? p.age+"세로 완만한 하락 구간에 들어섰다. "
       : p.age+"세로 기량 유지 자체가 관건인 나이다. ";
-    total = agew + dir + ". 리그 투수 중 기여 점수는 "+contribution(p)+"점.";
+    total = agew + dir + ". 리그 투수 중 기여 점수는 100점 만점에 "+contribution(p)+"점.";
   } else {
     season = s.pa.toFixed(0)+"타석에서 "+f3(p.avg)+"/"+f3(p.obp)+"/"+f3(p.slg)
       + ", "+p.hr+"홈런 "+p.rbi+"타점을 올렸다. OPS는 "+f3(p.ops)
@@ -954,7 +1345,7 @@ function evalPlayer(p){
       : p.age<=31 ? p.age+"세로 전성기 구간이다. "
       : p.age<=35 ? p.age+"세로 완만한 하락 구간에 들어섰다. "
       : p.age+"세로 기량 유지 자체가 관건인 나이다. ";
-    total = agew2 + dir2 + ". 리그 타자 중 기여 점수는 "+contribution(p)+"점.";
+    total = agew2 + dir2 + ". 리그 타자 중 기여 점수는 100점 만점에 "+contribution(p)+"점.";
   }
   return {season:season, total:total};
 }
@@ -1009,13 +1400,14 @@ function renderDetail(){
   var box=document.getElementById("detail");
   if(!sel){ box.className=""; box.textContent=""; return; }
   var t=teamOf(sel), r=last.filter(function(x){ return x.key===sel; })[0], m=r.m;
-  box.textContent=""; box.className="open";
+  box.textContent=""; box.className="open"; anim(box, "drop");
 
   var hd=document.createElement("div"); hd.className="dhead";
   hd.style.background=t.color; hd.style.color=inkOn(t.color);
   var nm=document.createElement("b"); nm.textContent=t.name;
   var rec=document.createElement("span"); rec.className="rec num";
-  rec.textContent="2026 "+t.w+"-"+t.d+"-"+t.l+" · 최근 5시즌 "
+  var rr=recOf(t);
+  rec.textContent="2026 "+rr.w+"-"+rr.d+"-"+rr.l+" · 최근 5시즌 "
     + t.prior.map(f3).join(" ") + " · 기대승률 "+f3(m.talent);
   var st=document.createElement("button"); st.className="star";
   var mine0 = state.myTeam===t.key;
@@ -1074,7 +1466,12 @@ function renderDetail(){
     .concat(key.filter(function(p){ return p.t==="P"; }).slice(0,2))
     .sort(function(a,b){ return effWar(b)-effWar(a); });
   var g=document.createElement("div"); g.className="grp";
-  var gt=document.createElement("div"); gt.className="gt"; gt.textContent="핵심 선수 능력치";
+  var scaleNote=document.createElement("div"); scaleNote.className="hint";
+  scaleNote.style.margin="10px 0 2px";
+  scaleNote.textContent="아래 기여 점수와 오각형 능력치는 모두 100점 만점입니다. "
+    + "리그 전체 선수 중 백분위라서 50점이 딱 중간, 100점에 가까울수록 리그 최상위입니다.";
+  bd.appendChild(scaleNote);
+  var gt=document.createElement("div"); gt.className="gt"; gt.textContent="핵심 선수 능력치 (100점 만점)";
   g.appendChild(gt);
   var rr=document.createElement("div"); rr.className="radars";
   five.forEach(function(p){
@@ -1101,7 +1498,7 @@ function renderDetail(){
     g2.appendChild(e);
   }
   bo.forEach(function(x){
-    var d=document.createElement("div"); d.className="bo";
+    var d=document.createElement("div"); d.className="bo rise";
     var n=document.createElement("div"); n.className="bn"; n.textContent=x.p.n;
     var sp2=document.createElement("span");
     sp2.textContent=x.p.age+"세 · "+(x.p.t==="P"?"투수":"타자");
@@ -1116,7 +1513,8 @@ function renderDetail(){
 function group(title, list, home, kind){
   var g=document.createElement("div"); g.className="grp";
   if(kind) g.dataset.grp=kind;
-  var gt=document.createElement("div"); gt.className="gt"; gt.textContent=title;
+  var gt=document.createElement("div"); gt.className="gt";
+  gt.textContent=title + (kind ? " · 기여 100점 만점" : "");
   if(kind){
     var tp=document.createElement("span"); tp.className="tip";
     tp.textContent = kind==="H" ? "손잡이를 끌어 타순 변경" : "손잡이를 끌어 선발·불펜 이동";
@@ -1201,15 +1599,37 @@ var TEAM_ALIAS = {
   hanwha:["한화","이글스"], lotte:["롯데","자이언츠"], ssg:["SSG","에스에스지","랜더스"],
   kiwoom:["키움","히어로즈"]
 };
-var OUT_KW = ["포스팅","메이저리그","빅리그","MLB","메이저 리그","해외 진출","해외진출","도전",
+var OUT_KW = ["포스팅","메이저리그","빅리그","MLB","메이저 리그","해외 진출","해외진출",
   "방출","웨이버","웨이버 공시","논텐더","보류선수 제외","보류 선수 제외","재계약 불가","재계약 포기",
-  "은퇴","은퇴식","현역 은퇴","임의해지","임의 해지","퇴단","결별","작별","떠난","떠나",
+  "은퇴","은퇴식","현역 은퇴","임의해지","임의 해지","퇴단","결별","작별",
+  "팀을 떠나","팀을 떠난","KBO를 떠나","한국을 떠나",
   "군 입대","현역 입대","입대","상무","경찰","사회복무","병역"];
 var HURT_KW = ["시즌 아웃","시즌아웃","수술","토미존","십자인대","인대 파열","골절","부상",
-  "재활","1군 말소","말소","엔트리 제외","통증","전열 이탈","전력 이탈","이탈"];
+  "재활","1군 말소","말소","엔트리 제외","통증","전열 이탈","전력 이탈"];
 var IN_KW = ["잔류","재계약","복귀","전역","제대","소집 해제","소집해제","연장 계약","계약 연장",
   "재활 완료","1군 복귀","콜업","등록"];
 var MOVE_KW = ["이적","트레이드","입단","영입","FA 계약","사인","계약하며","유니폼을 입","품는다","품에"];
+/* 경기 결과·중계 기사를 걸러낸다. "SSG, 두산에 1-0 신승"을 이적으로 읽던 문제 */
+var GAME_KW = ["신승","완승","역전","끝내기","선발승","완봉","완투","승리","패배","무승부",
+  "연승","연패","맞대결","선두 탈환","위닝시리즈","스윕","경기 취소","우천","서스펜디드",
+  "타점","홈런포","멀티히트","호투","난조","불펜 붕괴","세이브","홀드","등판","선발 등판",
+  "1군 엔트리","선발 라인업","라인업","득점","실점","이닝 무실점","QS","퀄리티스타트",
+  "도전","선착","달성","신기록","대기록","첫 승","첫 선발","데뷔전","선두 질주","탈꼴찌",
+  "매직넘버","가을야구","포스트시즌 진출","시리즈","더블헤더"];
+/* 이 단어들이 있으면 경기 기사라도 로스터 변화로 인정한다 */
+var STRONG_KW = ["이적","트레이드","방출","웨이버","논텐더","은퇴","임의해지","임의 해지",
+  "시즌 아웃","시즌아웃","수술","토미존","십자인대","인대 파열","골절",
+  "1군 말소","엔트리 제외","전열 이탈","전력 이탈","FA 계약","입단","영입","포스팅",
+  "해외 진출","해외진출","군 입대","현역 입대","상무","경찰","사회복무",
+  "재계약 불가","재계약 포기","보류선수 제외","보류 선수 제외",
+  "1군 복귀","콜업","전역","제대","소집 해제","소집해제","잔류","재계약"];
+function looksLikeGame(line){
+  if(/\d+\s*[-:]\s*\d+/.test(line)) return true;          /* 1-0 같은 스코어 */
+  if(/\d+\s*연[승패]/.test(line)) return true;
+  if(/\d+\s*[승패무](?![어에])/.test(line)) return true;     /* "2승 도전" 같은 기록 기사 */
+  if(/\d+\s*(타점|홈런|이닝|안타|삼진|세이브|홀드|호)/.test(line)) return true;
+  return hasKw(line, GAME_KW) ? true : false;
+}
 
 function findPlayers(line){
   var hits=[];
@@ -1239,14 +1659,16 @@ function parseNews(text){
     var teams=findTeams(line);
     var kOut=hasKw(line,OUT_KW), kHurt=hasKw(line,HURT_KW),
         kIn=hasKw(line,IN_KW), kMove=hasKw(line,MOVE_KW);
+    /* 경기 기사인데 확실한 로스터 단어도 없으면 아예 건드리지 않는다 */
+    var isGame=looksLikeGame(line) && !hasKw(line, STRONG_KW);
     ps.forEach(function(p){
       var dest=teams.filter(function(k){ return k!==nowTeam(p); })[0];
-      if(kMove && dest) changes.push({player:p.n, action:"move", to:dest, why:kMove, line:line});
-      else if(kOut)     changes.push({player:p.n, action:"out",  why:kOut,  line:line});
-      else if(kHurt)    changes.push({player:p.n, action:"hurt", why:kHurt, line:line});
-      else if(kIn)      changes.push({player:p.n, action:"in",   why:kIn,   line:line});
-      else if(dest)     changes.push({player:p.n, action:"move", to:dest, why:"팀 변경", line:line});
-      /* 선수는 찾았는데 무슨 일인지 못 읽은 경우 — 버리지 말고 직접 고르게 한다 */
+      /* 이적은 이적 키워드가 분명히 있을 때만. 팀 이름이 같이 나온 것만으로는 안 잡는다 */
+      if(kMove && dest && !isGame) changes.push({player:p.n, action:"move", to:dest, why:kMove, line:line});
+      else if(kOut && !isGame)     changes.push({player:p.n, action:"out",  why:kOut,  line:line});
+      else if(kHurt && !isGame)    changes.push({player:p.n, action:"hurt", why:kHurt, line:line});
+      else if(kIn && !isGame)      changes.push({player:p.n, action:"in",   why:kIn,   line:line});
+      else if(isGame) return;      /* 경기 기사는 헤드라인으로만 보여준다 */
       else changes.push({player:p.n, action:"ask", why:"내용을 못 읽음", line:line});
     });
   });
@@ -1328,7 +1750,7 @@ function showProposal(res){
 
   ch.forEach(function(c){
     var p=playerByName(c.player);
-    var d=document.createElement("div"); d.className="bo";
+    var d=document.createElement("div"); d.className="bo rise";
     var n=document.createElement("div"); n.className="bn";
     n.textContent=teamOf(nowTeam(p)).short+" "+c.player+" "+actionLabel(c);
     var w=document.createElement("div"); w.className="br"; w.textContent=c.line || ("근거: "+c.why);
@@ -1456,7 +1878,7 @@ function autoUpdate(btn){
   var msg=document.getElementById("msg");
   var key=lsGet("kbo27key","");
   if(!key && !(HOSTED && sampleNs)){ msg.textContent="아래 API 키를 넣어야 웹 검색이 됩니다."; return; }
-  btn.disabled=true; var old=btn.textContent; btn.textContent="검색 중…";
+  btn.disabled=true; btn.classList.add("busy"); var old=btn.textContent; btn.textContent="검색 중…";
   var names=ALLP.map(function(p){ return p.n; }).join(", ");
   var prompt="너는 KBO 로스터 관리자다. 아래 선수 명단을 기준으로, 웹 검색을 통해 최근 3주 사이 확정된 "
     +"FA 계약, 이적과 트레이드, 해외 진출, 방출, 은퇴, 군 입대, 시즌 아웃급 부상, 외국인 선수 교체를 찾아라.\n\n"
@@ -1490,7 +1912,7 @@ function autoUpdate(btn){
     else { applyChanges(ch, res.summary||"웹 검색 반영"); msg.textContent=ch.length+"건 반영했습니다."; }
   }).catch(function(e){
     msg.textContent="실패: "+(e && e.message ? e.message : "잠시 뒤 다시 시도해보세요");
-  }).finally(function(){ btn.disabled=false; btn.textContent=old; });
+  }).finally(function(){ btn.disabled=false; btn.textContent=old; btn.classList.remove("busy"); });
 }
 
 /* ---------- 선수 기록 웹 갱신 ---------- */
@@ -1515,8 +1937,10 @@ function statPrompt(t){
     + "추측하지 않는다. 숫자만 넣고 단위나 문자는 붙이지 않는다. JSON만 출력한다.\n"
     + '형식: {"players":[{"n":"원태인","era":4.26,"whip":1.35,"ip":120.3,"so":101,"bb":25}]}';
 }
+var autoBack=[];   /* 기록이 늘어난 부상 선수 = 복귀 */
 function collectDiff(list){
   var out=[];
+  autoBack=[];
   (list||[]).forEach(function(row){
     var p=playerByName(row.n); if(!p) return;
     var next={}, changed=false;
@@ -1529,6 +1953,12 @@ function collectDiff(list){
       if(d>thr) changed=true;
     });
     if(p.t==="H" && typeof next.obp==="number" && typeof next.slg==="number") next.ops=next.obp+next.slg;
+    /* 부상으로 빼둔 선수인데 이닝·타석이 늘었으면 실제로 뛰고 있다는 뜻 */
+    if(isHalf(p.n)){
+      var grew = p.t==="P" ? (typeof next.ip==="number" && next.ip > p.ip + 2)
+                           : (typeof next.pa==="number" && next.pa > p.pa + 8);
+      if(grew) autoBack.push(p);
+    }
     if(changed && Object.keys(next).length) out.push({p:p, next:next});
   });
   return out;
@@ -1548,16 +1978,47 @@ function diffLabel(p, next){
 function showDiff(all){
   var box=document.getElementById("diff");
   box.textContent="";
+  function roleBlock(){
+    if(!roleChg.length) return;
+    var rh=document.createElement("div"); rh.className="gt";
+    rh.style.margin="10px 0 4px";
+    rh.textContent="보직 변경 "+roleChg.length+"명 (자동 반영)";
+    box.appendChild(rh);
+    roleChg.forEach(function(c){
+      var d=document.createElement("div"); d.className="bo pop";
+      var n=document.createElement("div"); n.className="bn";
+      n.textContent=teamOf(nowTeam(c.p)).short+" "+c.p.n;
+      var w=document.createElement("div"); w.className="br";
+      w.textContent=roleKr(c.from)+" → "+roleKr(c.to);
+      d.appendChild(n); d.appendChild(w); box.appendChild(d);
+    });
+  }
   if(!all.length){
+    roleBlock();
     var e=document.createElement("div"); e.className="empty";
-    e.textContent="바뀐 기록이 없습니다.";
+    e.textContent = roleChg.length ? "기록은 그대로고 보직만 바뀌었습니다." : "바뀐 기록이 없습니다.";
     box.appendChild(e); return;
   }
   var h=document.createElement("div"); h.className="hint";
   h.textContent="아래 내용을 확인하고 적용하세요. 이상하면 취소하면 원래 기록 그대로 남습니다.";
   box.appendChild(h);
+  roleBlock();
+  if(autoBack.length){
+    var bh=document.createElement("div"); bh.className="gt";
+    bh.style.margin="10px 0 4px";
+    bh.textContent="부상 복귀로 자동 처리 "+autoBack.length+"명";
+    box.appendChild(bh);
+    autoBack.forEach(function(p){
+      var d=document.createElement("div"); d.className="bo rise";
+      var n=document.createElement("div"); n.className="bn";
+      n.textContent=teamOf(p.home).short+" "+p.n+" 복귀";
+      var w=document.createElement("div"); w.className="br";
+      w.textContent = p.t==="P" ? "이닝이 늘어 실제로 등판 중" : "타석이 늘어 실제로 출장 중";
+      d.appendChild(n); d.appendChild(w); box.appendChild(d);
+    });
+  }
   all.slice(0,40).forEach(function(x){
-    var d=document.createElement("div"); d.className="bo";
+    var d=document.createElement("div"); d.className="bo rise";
     var n=document.createElement("div"); n.className="bn";
     n.textContent=teamOf(x.p.home).short+" "+x.p.n;
     var w=document.createElement("div"); w.className="br"; w.textContent=diffLabel(x.p, x.next);
@@ -1576,11 +2037,14 @@ function showDiff(all){
     all.forEach(function(x){
       state.stats[x.p.n]=Object.assign(state.stats[x.p.n]||{}, x.next);
     });
+    autoBack.forEach(function(p){ delete state.out[p.n]; });
     var d=new Date();
     state.statStamp=d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
     applyStats(); rebuildPools(); touch(); renderLog(); run();
     box.textContent="";
-    document.getElementById("msg").textContent=all.length+"명 기록을 갱신했습니다.";
+    document.getElementById("msg").textContent=all.length+"명 기록 갱신"
+      + (autoBack.length ? " · 부상 복귀 "+autoBack.length+"명" : "") + " 완료.";
+    autoBack=[];
   });
   no.addEventListener("click", function(){ box.textContent=""; });
   row.appendChild(ok); row.appendChild(no); box.appendChild(row);
@@ -1588,11 +2052,11 @@ function showDiff(all){
 function updateStats(btn){
   var msg=document.getElementById("msg"), key=lsGet("kbo27key","");
   if(!key){ msg.textContent="선수 기록 갱신은 API 키가 있어야 합니다."; return; }
-  btn.disabled=true;
+  btn.disabled=true; btn.classList.add("busy");
   var old=btn.textContent, all=[], i=0;
   function step(){
     if(i>=TEAMS.length){
-      btn.disabled=false; btn.textContent=old;
+      btn.disabled=false; btn.textContent=old; btn.classList.remove("busy");
       msg.textContent="확인 완료. 바뀐 선수 "+all.length+"명.";
       showDiff(all); return;
     }
@@ -1700,6 +2164,25 @@ function commitOrder(){
 }
 
 /* ---------- 키 없이 기록 갱신 (공개 릴레이 경유) ---------- */
+var TEAM_EN = {
+  doosan:"Doosan Bears", lotte:"Lotte Giants", samsung:"Samsung Lions", hanwha:"Hanwha Eagles",
+  kia:"Kia Tigers", lg:"LG Twins", nc:"NC Dinos", kt:"KT Wiz",
+  kiwoom:"Kiwoom Heroes", ssg:"SSG Landers"
+};
+function readStandings(text){
+  var got={};
+  TEAMS.forEach(function(t){
+    var en=TEAM_EN[t.key], i=text.indexOf(en);
+    if(i<0) return;
+    var seg=text.slice(i+en.length, i+en.length+90).match(/\d+(?:\.\d+)?/g);
+    if(!seg || seg.length<3) return;
+    var w=parseInt(seg[0],10), l=parseInt(seg[1],10), d=parseInt(seg[2],10);
+    var g=w+l+d;
+    if(!(g>=80 && g<=150) || w<0 || l<0 || d<0 || d>25) return;
+    got[t.key]={w:w, l:l, d:d};
+  });
+  return Object.keys(got).length>=8 ? got : null;
+}
 var TEAM_SRC = { doosan:"1-Doosan-Bears", lotte:"2-Lotte-Giants", samsung:"3-Samsung-Lions",
   hanwha:"4-Hanwha-Eagles", kia:"5-Kia-Tigers", lg:"6-LG-Twins", nc:"9-NC-Dinos",
   kt:"22-KT-Wiz", kiwoom:"23-Kiwoom-Heroes", ssg:"24-SSG-Landers" };
@@ -1707,7 +2190,9 @@ var RELAYS = [
   function(u){ return "https://api.allorigins.win/raw?url="+encodeURIComponent(u); },
   function(u){ return "https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u); },
   function(u){ return "https://corsproxy.io/?url="+encodeURIComponent(u); },
-  function(u){ return "https://r.jina.ai/"+u; }
+  function(u){ return "https://r.jina.ai/"+u; },
+  function(u){ return "https://api.allorigins.win/raw?charset=UTF-8&url="+encodeURIComponent(u); },
+  function(u){ return "https://api.codetabs.com/v1/proxy/?quest="+encodeURIComponent(u); }
 ];
 var goodRelay = 0;          /* 마지막으로 성공한 중계 서버를 기억한다 */
 var RELAY_TIMEOUT = 8000;
@@ -1776,53 +2261,150 @@ function readPlayer(text, p){
   Object.keys(out).forEach(function(k){ if(!sane(k,out[k])) ok=false; });
   return ok ? out : null;
 }
+/* MyKBO 팀 페이지는 이름 옆에 "#55 · RP · LHP" 처럼 보직을 적어 둔다.
+   시즌 중에 선발↔불펜이 바뀐 선수를 여기서 잡아낸다. */
+function readRole(text, p){
+  if(p.t!=="P") return null;
+  var i=text.indexOf(p.r);
+  if(i<0) return null;
+  var seg=text.slice(i+p.r.length, i+p.r.length+42).replace(/#\s*\d+/g," ");
+  var m=seg.match(/(?:^|[^A-Za-z\/])(SP\s*\/\s*RP|RP\s*\/\s*SP|SP|RP|CP)(?![A-Za-z])/);
+  if(!m) return null;
+  var r=m[1].replace(/\s/g,"");
+  if(r==="SP") return "SP";
+  if(r==="CP") return "CP";
+  return "RP";                     /* RP, SP/RP(스윙맨)는 불펜으로 본다 */
+}
+var roleChg=[];                    /* 이번 업데이트에서 보직이 바뀐 선수 */
+function applyRoles(rows){
+  (rows||[]).forEach(function(x){
+    var p=x.p, want=x.role, before=roleOf(p);
+    if(before===want) return;
+    if(want===p.role) delete state.roles[p.n];
+    else state.roles[p.n]=want;
+    roleChg.push({p:p, from:before, to:want});
+  });
+}
+function roleKr(r){ return r==="SP" ? "선발" : (r==="CP" ? "마무리" : "불펜"); }
+/* 업데이트 버튼 하나로 전부 갱신한다.
+   ① 10팀 선수 기록·보직 ② 현재 순위표 ③ 최근 4주 일정(오늘의 경기 + 최근 5경기) ④ 뉴스 */
 function refreshFree(btn){
   var msg=document.getElementById("msg");
-  btn.disabled=true;
   var old=btn.textContent;
-  var all=[], done=0, fails=0, queue=TEAMS.slice(), running=0;
-  var LANES=4;                       /* 4팀씩 동시에 */
-  var t0=Date.now();
+  btn.disabled=true; btn.classList.add("busy");
 
-  function tick(){
-    btn.textContent = done+"/"+TEAMS.length;
-    msg.textContent = "KBO 기록을 읽는 중 " + done + "/" + TEAMS.length;
+  var weeks=weekUrls();
+  var TOTAL = TEAMS.length + 1 + weeks.length + NEWS_Q.length;
+  var done=0, t0=Date.now();
+  var all=[], fails=0, schedGot=[], recN=0, newsN=0, standOk=false;
+  roleChg=[];
+
+  function tick(label){
+    done++;
+    var pctv=Math.min(99, Math.round(done/TOTAL*100));
+    btn.textContent=pctv+"%";
+    msg.textContent=(label||"업데이트 중")+" · "+pctv+"%";
   }
-  function finish(){
-    btn.disabled=false; btn.textContent=old;
+
+  /* ① 팀별 선수 기록 + 보직 (4팀씩) */
+  function teamStats(){
+    return new Promise(function(resolve){
+      var queue=TEAMS.slice(), running=0, LANES=4;
+      function pump(){
+        if(!queue.length && running===0) return resolve();
+        while(running<LANES && queue.length){
+          running++;
+          (function(t){
+            var mine=ALLP.filter(function(p){ return p.home===t.key; });
+            fetchVia("https://mykbostats.com/teams/"+TEAM_SRC[t.key], mine[0] ? mine[0].r : null)
+              .then(function(html){
+                var text=plain(html), rows=[], rr=[];
+                mine.forEach(function(p){
+                  var v=readPlayer(text,p);
+                  if(v){ v.n=p.n; rows.push(v); }
+                  var rl=readRole(text,p);
+                  if(rl) rr.push({p:p, role:rl});
+                });
+                applyRoles(rr);
+                all=all.concat(collectDiff(rows));
+              })
+              .catch(function(){ fails++; })
+              .then(function(){
+                running--; tick("선수 기록 "+t.short);
+                pump();
+              });
+          })(queue.shift());
+        }
+      }
+      pump();
+    });
+  }
+  /* ② 현재 순위표 */
+  function standings(){
+    return fetchVia("https://mykbostats.com/standings", null)
+      .then(function(html){
+        var rec=readStandings(plain(html));
+        if(rec){ state.teamRec=rec; standOk=true; }
+      })
+      .catch(function(){})
+      .then(function(){ tick("현재 순위표"); });
+  }
+  /* ③ 일정 (여러 주) */
+  function sched(){
+    return Promise.all(weeks.map(function(u){
+      return fetchVia(u, "/games/")
+        .then(function(html){ schedGot.push(parseSchedule(html)); })
+        .catch(function(){})
+        .then(function(){ tick("경기 일정"); });
+    }));
+  }
+  /* ④ 뉴스 */
+  function news(){
+    return fetchNews(function(){ tick("뉴스"); })
+      .then(function(n){ newsN=n||0; })
+      .catch(function(){});
+  }
+
+  tick("시작");
+  done=0;
+  Promise.all([ teamStats().then(standings), sched(), news() ]).then(function(){
+    /* 일정 합치기 */
+    var by={};
+    schedGot.forEach(function(gs){ gs.forEach(function(g){ if(!by[g.id]) by[g.id]=g; }); });
+    var list=Object.keys(by).map(function(k){ return by[k]; });
+    if(list.length){
+      schedule=list;
+      var ts=ymdOf(new Date()), days=gameDays();
+      gDayIdx=days.indexOf(ts);
+      if(gDayIdx<0){
+        gDayIdx=days.length-1;
+        for(var i=0;i<days.length;i++) if(days[i]>=ts){ gDayIdx=i; break; }
+      }
+      recN=mergeHist();
+    }
+    if(roleChg.length) rebuildPools();
+    touch(); run();
+    showRank(rankMode);
+    renderGames(); renderNow(); renderFeed(); renderNewsChips();
+    if(sel) renderDetail();
+
+    btn.disabled=false; btn.textContent=old; btn.classList.remove("busy");
     var sec=((Date.now()-t0)/1000).toFixed(0);
-    if(fails===TEAMS.length){
-      msg.textContent="중계 서버가 응답하지 않아 갱신하지 못했습니다. 잠시 뒤 다시 누르거나 아래 API 키 방식을 쓰세요.";
+    if(fails===TEAMS.length && !list.length && !newsN){
+      msg.textContent="중계 서버가 응답하지 않아 갱신하지 못했습니다. 잠시 뒤 다시 눌러 주세요.";
       return;
     }
-    msg.textContent="확인 완료 ("+sec+"초). 바뀐 선수 "+all.length+"명"+(fails?" · "+fails+"개 팀 실패":"")+".";
+    var bits=[];
+    bits.push("기록 "+all.length+"명");
+    if(roleChg.length) bits.push("보직 "+roleChg.length+"명");
+    if(standOk) bits.push("순위표 갱신");
+    if(list.length) bits.push("일정 "+list.length+"경기");
+    if(recN) bits.push("최근 5경기 "+recN+"팀");
+    if(newsN) bits.push("뉴스 "+newsN+"건");
+    if(fails) bits.push(fails+"개 팀 실패");
+    msg.textContent="업데이트 완료 ("+sec+"초) — "+bits.join(" · ")+".";
     showDiff(all);
-  }
-  function pump(){
-    while(running < LANES && queue.length){
-      running++;
-      (function(t){
-        var mine=ALLP.filter(function(p){ return p.home===t.key; });
-        fetchVia("https://mykbostats.com/teams/"+TEAM_SRC[t.key], mine[0] ? mine[0].r : null)
-          .then(function(html){
-            var text=plain(html), rows=[];
-            mine.forEach(function(p){
-              var v=readPlayer(text,p);
-              if(v){ v.n=p.n; rows.push(v); }
-            });
-            all=all.concat(collectDiff(rows));
-          })
-          .catch(function(){ fails++; })
-          .then(function(){
-            running--; done++; tick();
-            if(queue.length) pump();
-            else if(running===0) finish();
-          });
-      })(queue.shift());
-    }
-  }
-  tick();
-  pump();
+  });
 }
 
 /* ---------- 이벤트 ---------- */
@@ -1840,7 +2422,7 @@ document.getElementById("bReset").addEventListener("click", function(){
     return;
   }
   resetArmed=false; this.textContent="초기화";
-  state.out={}; state.moves={}; state.stats={}; state.roles={}; state.ord={}; state.boost={};
+  state.out={}; state.moves={}; state.stats={}; state.roles={}; state.ord={}; state.boost={}; state.mgr={};
   state.news=[]; state.stamp=""; state.statStamp="";  /* My team과 직접 추가한 선수는 유지 */
   applyStats(); rebuildPools();
   touch(); renderLog(); run();
@@ -1971,7 +2553,7 @@ function playSeason(){
 }
 function playMany(btn){
   var msg=document.getElementById("simMsg");
-  btn.disabled=true; var old=btn.textContent; btn.textContent="계산 중…";
+  btn.disabled=true; btn.classList.add("busy"); var old=btn.textContent; btn.textContent="계산 중…";
   setTimeout(function(){
     sims=10000; run();
     var box=document.getElementById("simOut");
@@ -2004,7 +2586,7 @@ function playMany(btn){
       box.appendChild(p);
     }
     msg.textContent="정밀 계산 완료. 순위 탭 확률도 같이 갱신됐습니다.";
-    btn.disabled=false; btn.textContent=old;
+    btn.disabled=false; btn.textContent=old; btn.classList.remove("busy");
   }, 30);
 }
 
@@ -2106,15 +2688,17 @@ function renderChips(){
     var b=document.createElement("button");
     b.textContent=t.short;
     b.style.background=t.color; b.style.color=inkOn(t.color);
-    if(boostTeam===t.key) b.className="on";
+    b.classList.add("pop");
+    b.style.animationDelay=(TEAMS.indexOf(t)*32)+"ms";
+    if(boostTeam===t.key) b.classList.add("on");
     b.addEventListener("click", function(){
       boostTeam = (boostTeam===t.key ? null : t.key);
       renderChips(); renderBoost();
     });
     box.appendChild(b);
   });
-  var n=Object.keys(state.boost).length;
-  document.getElementById("boostNote").textContent = n ? n+"명 조절됨" : "";
+  var n=Object.keys(state.boost).length + Object.keys(state.mgr).length;
+  document.getElementById("boostNote").textContent = n ? n+"건 조절됨" : "";
 }
 function talentOf(key){
   var m=computeAll();
@@ -2126,12 +2710,13 @@ function renderBoost(){
   box.textContent="";
   if(!boostTeam){
     var e=document.createElement("div"); e.className="empty";
-    e.textContent="팀을 고르면 선수 목록이 나옵니다.";
+    e.textContent="팀을 고르면 감독과 선수 전원이 나옵니다.";
     box.appendChild(e); return;
   }
   var t=teamOf(boostTeam);
-  var sum=document.createElement("div"); sum.className="bsum";
+  var idx0=0;
   var before=talentOf(boostTeam);
+  var sum=document.createElement("div"); sum.className="bsum";
   function paintSum(){
     var now=talentOf(boostTeam);
     sum.textContent="";
@@ -2148,17 +2733,19 @@ function renderBoost(){
   paintSum();
   box.appendChild(sum);
 
-  var list=rosterOf(boostTeam).slice()
-    .sort(function(a,b){ return effWar(b)-effWar(a); }).slice(0,14);
-  list.forEach(function(p){
-    var row=document.createElement("div"); row.className="brow";
+  function head(txt){
+    var h=document.createElement("div"); h.className="gt";
+    h.style.margin="12px 0 3px"; h.textContent=txt;
+    box.appendChild(h);
+  }
+  function slider(label, sub, getVal, base, onSet){
+    var row=document.createElement("div"); row.className="brow rise";
+    row.style.setProperty("--i", Math.min(idx0++, 16));
     var nm=document.createElement("div"); nm.className="bn";
-    nm.textContent=p.n; nm.title=p.r+" · "+(p.t==="P"?(isSP(p)?"선발":"불펜"):"타자");
-    var base=baseScore(p);
+    nm.textContent=label; nm.title=sub||label;
     var inp=document.createElement("input");
-    inp.type="range"; inp.min="1"; inp.max="100"; inp.step="1";
-    inp.value=contribution(p);
-    inp.setAttribute("aria-label", p.n+" 잘함 지수");
+    inp.type="range"; inp.min="1"; inp.max="100"; inp.step="1"; inp.value=getVal();
+    inp.setAttribute("aria-label", label+" 지수");
     var val=document.createElement("div"); val.className="bv";
     function paint(){
       var v=parseInt(inp.value,10);
@@ -2168,19 +2755,50 @@ function renderBoost(){
     }
     paint();
     inp.addEventListener("input", function(){
-      var v=parseInt(inp.value,10);
-      if(v===base) delete state.boost[p.n]; else state.boost[p.n]=v;
+      onSet(parseInt(inp.value,10));
       paint(); paintSum();
       clearTimeout(renderBoost._t);
       renderBoost._t=setTimeout(function(){ touch(); run(); renderChips(); }, 220);
     });
     row.appendChild(nm); row.appendChild(inp); row.appendChild(val);
     box.appendChild(row);
+  }
+
+  /* 감독 */
+  head("감독");
+  slider(MANAGERS[boostTeam] || "감독", "감독 역량",
+    function(){ return typeof state.mgr[boostTeam]==="number" ? state.mgr[boostTeam] : 50; },
+    50,
+    function(v){ if(v===50) delete state.mgr[boostTeam]; else state.mgr[boostTeam]=v; });
+  var note=document.createElement("div"); note.className="axnote";
+  note.textContent="감독 지수는 최대 ±2승까지만 움직입니다. 야구에서 감독이 승수에 미치는 영향이 실제로 그 정도라서, 그 이상 주면 예측이 망가집니다.";
+  box.appendChild(note);
+
+  /* 선수 — 그룹별 전원 */
+  var mine=rosterOf(boostTeam);
+  var groups=[
+    ["선발 로테이션", mine.filter(isSP).sort(function(a,b){ return b.ip-a.ip; })],
+    ["불펜", mine.filter(function(p){ return p.t==="P" && !isSP(p); }).sort(function(a,b){ return b.ip-a.ip; })],
+    ["타선", mine.filter(function(p){ return p.t==="H"; }).sort(function(a,b){ return b.pa-a.pa; })]
+  ];
+  groups.forEach(function(g){
+    if(!g[1].length) return;
+    head(g[0]+" "+g[1].length+"명");
+    g[1].forEach(function(p){
+      var base=baseScore(p);
+      var sub = p.t==="P" ? p.era.toFixed(2)+" · "+p.ip.toFixed(0)+"이닝"
+                          : f3(p.avg)+" · OPS "+f3(p.ops);
+      slider(p.n, sub, function(){ return contribution(p); }, base, function(v){
+        if(v===base) delete state.boost[p.n]; else state.boost[p.n]=v;
+      });
+    });
   });
+
   var r=document.createElement("div"); r.className="row";
-  var rb=document.createElement("button"); rb.className="btn"; rb.textContent=t.short+" 지수 되돌리기";
+  var rb=document.createElement("button"); rb.className="btn"; rb.textContent=t.short+" 되돌리기";
   rb.addEventListener("click", function(){
     rosterOf(boostTeam).forEach(function(p){ delete state.boost[p.n]; });
+    delete state.mgr[boostTeam];
     touch(); run(); renderChips(); renderBoost();
   });
   r.appendChild(rb); box.appendChild(r);
@@ -2217,17 +2835,17 @@ function looksBaseball(x){
   if(findTeams(x.title).length) return true;
   return /KBO|프로야구|야구|타자|투수|구단|드래프트|불펜|선발/.test(x.title);
 }
-function loadNews(btn){
+/* 뉴스만 따로 부를 수도 있고, 통합 업데이트에서 한 단계로 부를 수도 있게 프로미스로 만든다.
+   step(): 한 건 끝날 때마다 진행률에 알린다. */
+function fetchNews(step){
   var msg=document.getElementById("newsMsg");
-  btn.disabled=true; var old=btn.textContent;
   msg.textContent="뉴스를 찾는 중입니다.";
-  var got=[], done=0, ok=0, err="";
+  var got=[], ok=0, err="";
   var week = Date.now() - 8*24*3600*1000;
-
-  NEWS_Q.forEach(function(q){
+  return Promise.all(NEWS_Q.map(function(q){
     var ctl = (typeof AbortController!=="undefined") ? new AbortController() : null;
     var timer = setTimeout(function(){ if(ctl) ctl.abort(); }, 12000);
-    fetch(gnews(q), ctl ? {signal:ctl.signal} : {})
+    return fetch(gnews(q), ctl ? {signal:ctl.signal} : {})
       .then(function(r){ return r.json(); })
       .then(function(d){
         if(!d || d.status!=="ok" || !d.items) throw new Error(d && d.message ? d.message : "형식 오류");
@@ -2241,44 +2859,119 @@ function loadNews(btn){
         });
       })
       .catch(function(e){ if(!err) err = (e && e.message) || "연결 실패"; })
-      .then(function(){
-        clearTimeout(timer);
-        btn.textContent = "불러오는 중 " + (++done) + "/" + NEWS_Q.length;
-        if(done < NEWS_Q.length) return;
-        btn.disabled=false; btn.textContent=old;
-        function collect(since){
-          var seen={}, out=[];
-          got.sort(function(a,b){ return b.ts-a.ts; }).forEach(function(x){
-            var key=x.title.replace(/[\s"'\u00b7\u2026]/g,"");
-            if(seen[key] || !looksBaseball(x)) return;
-            if(since && x.ts && x.ts < since) return;
-            seen[key]=1; out.push(x);
-          });
-          return out;
-        }
-        var list=collect(week), span="최근 일주일";
-        if(list.length < 8){                       /* 일주일 치가 얇으면 한 달까지 넓힌다 */
-          var wider=collect(Date.now() - 31*24*3600*1000);
-          if(wider.length > list.length){ list=wider; span="최근 한 달"; }
-        }
-        if(!list.length){
-          msg.textContent = ok ? "새로 올라온 KBO 기사가 없습니다."
-            : "뉴스를 가져오지 못했습니다" + (err ? " ("+err+")" : "") + ". 잠시 뒤 다시 눌러보세요.";
-          return;
-        }
-        state.feed=list.slice(0,60); touch();
-        msg.textContent = list.length + "건 · " + span;
-        renderFeed();
+      .then(function(){ clearTimeout(timer); if(step) step(); });
+  })).then(function(){
+    function collect(since){
+      var seen={}, out=[];
+      got.sort(function(a,b){ return b.ts-a.ts; }).forEach(function(x){
+        var key=x.title.replace(/[\s"'·…]/g,"");
+        if(seen[key] || !looksBaseball(x)) return;
+        if(since && x.ts && x.ts < since) return;
+        seen[key]=1; out.push(x);
       });
+      return out;
+    }
+    var list=collect(week), span="최근 일주일";
+    if(list.length < 8){
+      var wider=collect(Date.now() - 31*24*3600*1000);
+      if(wider.length > list.length){ list=wider; span="최근 한 달"; }
+    }
+    if(!list.length){
+      msg.textContent = ok ? "새로 올라온 KBO 기사가 없습니다."
+        : "뉴스를 가져오지 못했습니다" + (err ? " ("+err+")" : "") + ". 잠시 뒤 다시 눌러보세요.";
+      return 0;
+    }
+    state.feed=list.slice(0,60); touch();
+    msg.textContent = list.length + "건 · " + span;
+    renderFeed();
+    return list.length;
   });
+}
+function loadNews(btn){
+  var old=btn.textContent, n=0;
+  btn.disabled=true; btn.classList.add("busy");
+  fetchNews(function(){ btn.textContent="불러오는 중 "+Math.round(++n/NEWS_Q.length*100)+"%"; })
+    .then(function(){ btn.disabled=false; btn.textContent=old; btn.classList.remove("busy"); });
+}
+
+var newsTeam = "";     /* "" = 전체 */
+function renderNewsChips(){
+  var box=document.getElementById("newsChips");
+  box.textContent="";
+  var all=document.createElement("button");
+  all.textContent="전체";
+  all.style.background="var(--ink)"; all.style.color="var(--bg)";
+  if(newsTeam==="") all.className="on";
+  all.addEventListener("click", function(){ newsTeam=""; renderNewsChips(); renderFeed(); });
+  box.appendChild(all);
+  TEAMS.forEach(function(t){
+    var b=document.createElement("button");
+    b.textContent=t.short + (state.myTeam===t.key ? " ★" : "");
+    b.style.background=t.color; b.style.color=inkOn(t.color);
+    if(newsTeam===t.key) b.className="on";
+    b.addEventListener("click", function(){
+      newsTeam=t.key; renderNewsChips(); renderFeed();
+      if(!(state.feedTeam[t.key] || []).length) loadTeamNews(t);
+    });
+    box.appendChild(b);
+  });
+}
+function loadTeamNews(t){
+  var msg=document.getElementById("newsMsg");
+  msg.textContent=t.short+" 뉴스를 찾는 중…";
+  var ctl=(typeof AbortController!=="undefined") ? new AbortController() : null;
+  var timer=setTimeout(function(){ if(ctl) ctl.abort(); }, 12000);
+  fetch(gnews(t.name), ctl ? {signal:ctl.signal} : {})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || d.status!=="ok" || !d.items) throw new Error(d && d.message ? d.message : "형식 오류");
+      var out=[], seen={};
+      d.items.forEach(function(i){
+        var title=cleanTitle(i.title);
+        var src="", cut=title.lastIndexOf(" - ");
+        if(cut>6){ src=title.slice(cut+3); title=title.slice(0,cut); }
+        var key=title.replace(/\s+/g,"");
+        if(seen[key]) return;
+        seen[key]=1;
+        var x={ title:title, src:src||cleanTitle(i.author), link:i.link||"",
+                ts: i.pubDate ? Date.parse(i.pubDate.replace(" ","T")+"Z") : 0 };
+        if(SPAM.test(x.title)) return;
+        out.push(x);
+      });
+      state.feedTeam[t.key]=out.slice(0,40); touch();
+      msg.textContent=t.name+" "+out.length+"건";
+      renderFeed();
+    })
+    .catch(function(e){
+      msg.textContent=t.short+" 뉴스를 가져오지 못했습니다 ("+((e&&e.message)||"연결 실패")+").";
+    })
+    .then(function(){ clearTimeout(timer); });
+}
+function feedList(){
+  if(!newsTeam) return state.feed||[];
+  var mine=(state.feedTeam[newsTeam]||[]).slice();
+  /* 전체 목록에서도 그 팀 얘기를 끌어와 합친다 */
+  var seen={};
+  mine.forEach(function(x){ seen[x.title.replace(/\s+/g,"")]=1; });
+  (state.feed||[]).forEach(function(x){
+    var hit = findTeams(x.title).indexOf(newsTeam)>=0
+      || findPlayers(x.title).some(function(p){ return nowTeam(p)===newsTeam; });
+    if(!hit) return;
+    var k=x.title.replace(/\s+/g,"");
+    if(seen[k]) return;
+    seen[k]=1; mine.push(x);
+  });
+  return mine.sort(function(a,b){ return b.ts-a.ts; });
 }
 function renderFeed(){
   var box=document.getElementById("feed");
-  box.textContent="";
-  var list=(state.feed||[]);
+  box.textContent=""; window.__niN=0;
+  var list=feedList();
   if(!list.length){
     var e=document.createElement("div"); e.className="empty";
-    e.textContent="아직 불러온 뉴스가 없습니다. 위 버튼을 누르세요.";
+    e.textContent = newsTeam
+      ? teamOf(newsTeam).name+" 기사를 찾지 못했습니다."
+      : "아직 불러온 뉴스가 없습니다. 위 버튼을 누르세요.";
     box.appendChild(e); return;
   }
   var hits=[], rest=[];
@@ -2299,7 +2992,8 @@ function renderFeed(){
   rest.slice(0,40).forEach(function(o){ box.appendChild(newsItem(o.x, [])); });
 }
 function newsItem(x, ch){
-  var it=document.createElement("div"); it.className="ni";
+  var it=document.createElement("div"); it.className="ni rise";
+  it.style.setProperty("--i", (window.__niN=(window.__niN||0)+1)%14);
   var t=document.createElement("div"); t.className="t";
   if(x.link){
     var a=document.createElement("a"); a.href=x.link; a.target="_blank";
@@ -2327,17 +3021,1074 @@ function newsItem(x, ch){
   return it;
 }
 
+
+/* ================= 오늘의 경기 ================= */
+var PARKS = {
+  "Gwangju":"kia", "Daegu":"samsung", "Suwon":"kt", "Busan-Sajik":"lotte",
+  "Daejeon":"hanwha", "Seoul-Gocheok":"kiwoom", "Incheon":"ssg", "Changwon":"nc",
+  "Seoul-Jamsil":null,  /* LG·두산 공용이라 팀 순서로 판단 */
+  /* 짧게 적는 페이지도 있어서 같이 받아 둔다 */
+  "Sajik":"lotte", "Gocheok":"kiwoom", "Jamsil":null, "Munhak":"ssg", "Munsu":"ssg"
+};
+var PARK_KR = { "Gwangju":"광주", "Daegu":"대구", "Suwon":"수원", "Busan-Sajik":"사직",
+  "Daejeon":"대전", "Seoul-Gocheok":"고척", "Incheon":"인천", "Changwon":"창원",
+  "Seoul-Jamsil":"잠실",
+  "Sajik":"사직", "Gocheok":"고척", "Jamsil":"잠실", "Munhak":"문학", "Munsu":"문수" };
+function inningKr(s){
+  if(!s) return "";
+  var m=/(Top|Bot)\s*(\d+)/i.exec(s);
+  if(!m) return s;
+  return m[2]+"회"+(/top/i.test(m[1]) ? "초" : "말");
+}
+var MONTHS = ["January","February","March","April","May","June",
+              "July","August","September","October","November","December"];
+var schedule = [];   /* {ymd, away, home, aScore, hScore, time, park, status} */
+var gDayIdx = 0, gSel = null;
+
+function keyByEn(en){
+  for(var k in TEAM_EN) if(TEAM_EN[k]===en) return k;
+  return null;
+}
+/* MyKBO는 경기마다 /games/13924-Doosan-vs-Hanwha-20260908 링크를 단다.
+   URL에 원정·홈·날짜가 다 들어 있어서 본문 텍스트를 읽는 것보다 훨씬 확실하다. */
+var TEAM_SLUG = {
+  "Doosan":"doosan", "Lotte":"lotte", "Samsung":"samsung", "Hanwha":"hanwha",
+  "Kia":"kia", "KIA":"kia", "LG":"lg", "NC":"nc", "KT":"kt", "kt":"kt",
+  "Kiwoom":"kiwoom", "SSG":"ssg", "SK":"ssg", "Nexen":"kiwoom"
+};
+function slugKey(x){
+  if(TEAM_SLUG[x]) return TEAM_SLUG[x];
+  var low=String(x).toLowerCase();
+  for(var k in TEAM_SLUG) if(k.toLowerCase()===low) return TEAM_SLUG[k];
+  return null;
+}
+/* 중계 서버가 원본 HTML을 주든, r.jina.ai처럼 마크다운으로 바꿔서 주든
+   경기 주소(/games/13924-Doosan-vs-Hanwha-20260908)는 그대로 남는다.
+   그래서 태그를 찾지 않고 주소만 훑는다. 원정·홈·날짜·경기번호가 주소에 다 들어 있다. */
+function pickCtx(before, after, away, home){
+  var A=TEAM_EN[away], H=TEAM_EN[home];
+  function ok(t){ var i=t.indexOf(A); return i>=0 && t.indexOf(H)>i; }
+  var a=after.slice(0,300);
+  if(ok(a)) return a;
+  var b=before.slice(Math.max(0, before.length-300));
+  if(ok(b)) return b;
+  return b+" "+a;
+}
+var lastSchedRaw = "";
+function parseSchedule(src){
+  lastSchedRaw = String(src||"");
+  var re=/\/games\/(\d+)-([A-Za-z]+)-vs-([A-Za-z]+)-(\d{8})/g, m, hits=[];
+  while((m=re.exec(lastSchedRaw))) hits.push({id:m[1], a:m[2], h:m[3], d:m[4], s:m.index, e:re.lastIndex});
+  if(!hits.length) return parseScheduleText(plain(lastSchedRaw));
+  var out=[], seen={};
+  for(var i=0;i<hits.length;i++){
+    var x=hits[i];
+    var away=slugKey(x.a), home=slugKey(x.h);
+    if(!away || !home || away===home || seen[x.id]) continue;
+    seen[x.id]=1;
+    var bs = i>0 ? hits[i-1].e : Math.max(0, x.s-400);
+    var ae = (i+1<hits.length) ? hits[i+1].s : Math.min(lastSchedRaw.length, x.e+400);
+    var before = plain(lastSchedRaw.slice(bs, x.s));
+    var after  = plain(lastSchedRaw.slice(x.e, ae));
+    var g = readGameText(pickCtx(before, after, away, home), away, home);
+    /* 구장 이름은 항상 경기 주소 바로 뒤에 붙는다 — 앞쪽에서 주우면 옆 경기 것을 가져온다 */
+    g.park=null;
+    var pk=after.slice(0,140), best=-1;
+    Object.keys(PARKS).forEach(function(pn){
+      var q=pk.indexOf(pn);
+      if(q>=0 && (best<0 || q<best)){ best=q; g.park=pn; }
+    });
+    g.ymd = x.d.slice(0,4)+"-"+x.d.slice(4,6)+"-"+x.d.slice(6,8);
+    g.id  = x.id;
+    g.url = "https://mykbostats.com/games/"+x.id+"-"+x.a+"-vs-"+x.h+"-"+x.d;
+    out.push(g);
+  }
+  return out.length ? out : parseScheduleText(plain(lastSchedRaw));
+}
+
+/* 끝난 경기·진행 중 경기만 점수를 읽는다.
+   예정 경기 자리에 있는 숫자(순번, 관중, 기온 등)를 점수로 착각하던 문제를 막는다. */
+function kstTime(m){
+  if(!m) return "";
+  var h=parseInt(m[1],10)%12, mi=m[2];
+  if(/p/i.test(m[3])) h+=12;
+  var k=(h+9)%24;                       /* 페이지가 UTC로 내려주는 경우 */
+  if(k>=10 && k<=23) return (k<10?"0":"")+k+":"+mi;
+  return (h<10?"0":"")+h+":"+mi;        /* 이미 한국 시간이면 그대로 */
+}
+function readGameText(txt, away, home){
+  var A=TEAM_EN[away], H=TEAM_EN[home];
+  var inn=(txt.match(/\b(Top|Bot|Mid|End)\s*\.?\s*\d{1,2}(?:st|nd|rd|th)?/i)||[""])[0];
+  var fin=/\bfinals?\b|경기\s*종료/i.test(txt);
+  var off=/postpon|cancel|suspend|rained|우천|취소|연기/i.test(txt);
+  var tm=txt.match(/(\d{1,2}):(\d{2})\s*([ap])\.?m/i);
+  var status = off ? "취소" : (fin ? "종료" : (inn ? "진행" : "예정"));
+  var aSc=null, hSc=null;
+  if(status==="종료" || status==="진행"){
+    var ia=txt.indexOf(A), ih=txt.indexOf(H);
+    if(ia>=0 && ih>ia){
+      var mid=txt.slice(ia+A.length, ih).match(/\b\d{1,2}\b/);
+      var aft=txt.slice(ih+H.length).replace(/(\d+)\s*°/g," ").match(/\b\d{1,2}\b/);
+      if(mid && aft){
+        var x=parseInt(mid[0],10), y=parseInt(aft[0],10);
+        if(x>=0 && x<=30 && y>=0 && y<=30){ aSc=x; hSc=y; }   /* 야구 점수 범위 */
+      }
+    }
+  }
+  var park=null;
+  Object.keys(PARKS).forEach(function(pn){ if(txt.indexOf(pn)>=0) park=pn; });
+  return { away:away, home:home, aScore:aSc, hScore:hSc,
+    time: kstTime(tm), park:park, status:status, inning:inn };
+}
+
+/* 예전 텍스트 방식 (링크가 없는 경우 대비) */
+function parseScheduleText(text){
+  var out=[], m, dates=[];
+  var dre=new RegExp("(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s+("
+    +MONTHS.join("|")+")\\s+(\\d{1,2}),?\\s+(\\d{4})","g");
+  while((m=dre.exec(text))) dates.push({ pos:m.index, y:+m[4], mo:MONTHS.indexOf(m[2])+1, d:+m[3] });
+  if(!dates.length) return out;
+  var hits=[];
+  Object.keys(TEAM_EN).forEach(function(k){
+    var en=TEAM_EN[k], i=-1;
+    while((i=text.indexOf(en, i+1))>=0) hits.push({pos:i, end:i+en.length, key:k});
+  });
+  hits.sort(function(a,b){ return a.pos-b.pos; });
+  for(var i=0;i<hits.length-1;i++){
+    var A=hits[i], B=hits[i+1];
+    if(B.pos - A.end > 40) continue;
+    var dt=null;
+    for(var j=0;j<dates.length;j++) if(dates[j].pos < A.pos) dt=dates[j];
+    if(!dt) continue;
+    var stop=(i+2<hits.length) ? hits[i+2].pos : text.length;
+    var seg=text.slice(A.pos, Math.min(B.end+70, stop));
+    var g=readGameText(seg, A.key, B.key);
+    g.ymd=dt.y+"-"+String(dt.mo).padStart(2,"0")+"-"+String(dt.d).padStart(2,"0");
+    g.id=g.ymd+A.key+B.key;
+    if(!out.some(function(x){ return x.id===g.id; })) out.push(g);
+    i++;
+  }
+  return out;
+}
+/* 일정 페이지 한 장은 한 주치뿐이라 최근 5경기가 안 채워진다.
+   이번 주 + 지난 3주를 같이 받아서 합친다. */
+function ymdOf(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")
+    +"-"+String(d.getDate()).padStart(2,"0");
+}
+function weekUrls(){
+  var out=["https://mykbostats.com/schedule"], now=new Date();
+  for(var k=1;k<=3;k++){
+    out.push("https://mykbostats.com/schedule/week_of/"
+      + ymdOf(new Date(now.getTime() - k*7*24*3600*1000)));
+  }
+  return out;
+}
+/* 끝난 경기를 차곡차곡 쌓아 둔다. 부를 때마다 조금씩 채워진다. */
+function mergeHist(){
+  var h = state.hist || {};
+  schedule.forEach(function(g){
+    if(g.status!=="종료") return;
+    if(g.aScore===null || g.aScore===undefined) return;
+    if(g.hScore===null || g.hScore===undefined) return;
+    [[g.away, g.aScore, g.hScore, g.home], [g.home, g.hScore, g.aScore, g.away]]
+      .forEach(function(x){
+        if(!teamOf(x[0])) return;
+        var arr = h[x[0]] = h[x[0]] || [];
+        var id = String(g.id);
+        for(var i=0;i<arr.length;i++) if(arr[i].id===id) return;
+        arr.push({ id:id, ymd:g.ymd, vs:x[3], s:x[1]+"-"+x[2],
+          r: x[1]>x[2] ? "승" : (x[1]<x[2] ? "패" : "무") });
+      });
+  });
+  var n=0;
+  Object.keys(h).forEach(function(k){
+    h[k].sort(function(a,b){
+      if(a.ymd!==b.ymd) return a.ymd<b.ymd ? -1 : 1;
+      return (+a.id||0)-(+b.id||0);
+    });
+    if(h[k].length>30) h[k]=h[k].slice(-30);
+  });
+  var rc={};
+  Object.keys(h).forEach(function(k){ if(h[k].length){ rc[k]=h[k].slice(-5); n++; } });
+  state.hist=h; state.recent=rc; touch();
+  return n;
+}
+function loadGames(btn){
+  var msg=document.getElementById("gameMsg");
+  var pv=document.getElementById("gameRaw");
+  btn.disabled=true; var old=btn.textContent; btn.textContent="불러오는 중…";
+  btn.classList.add("busy");
+  if(pv) pv.textContent="";
+  var urls=weekUrls(), got=[], fails=0;
+  Promise.all(urls.map(function(u, i){
+    return fetchVia(u, "/games/")
+      .then(function(html){ got.push({i:i, g:parseSchedule(html)}); })
+      .catch(function(){ fails++; });
+  })).then(function(){
+    var by={};
+    got.sort(function(a,b){ return a.i-b.i; }).forEach(function(x){
+      x.g.forEach(function(g){ if(!by[g.id]) by[g.id]=g; });
+    });
+    var all=Object.keys(by).map(function(k){ return by[k]; });
+    if(!all.length){
+      msg.textContent="일정을 가져오지 못했습니다 — "
+        + (fails===urls.length ? "중계 서버 "+RELAYS.length+"곳이 모두 막혔거나 응답이 없음" : "경기 0개");
+      if(pv) pv.textContent = lastSchedRaw
+        ? "받은 내용 앞부분: "+plain(lastSchedRaw).slice(0,180)
+        : "중계 서버에서 아무것도 받지 못했습니다.";
+      return;
+    }
+    schedule=all;
+    var ts=ymdOf(new Date());
+    var days=gameDays();
+    gDayIdx=days.indexOf(ts);
+    if(gDayIdx<0){
+      gDayIdx=days.length-1;
+      for(var i=0;i<days.length;i++) if(days[i]>=ts){ gDayIdx=i; break; }
+    }
+    var n=mergeHist();
+    var done=all.filter(function(g){ return g.status==="종료"; }).length;
+    msg.textContent=all.length+"경기 · "+days.length+"일치 · 종료 "+done+"경기"
+      + (n ? " · 최근 5경기 "+n+"팀 반영" : "")
+      + (fails ? " · "+fails+"주 실패" : "");
+    renderGames();
+    renderNow();
+  }).then(function(){
+    btn.disabled=false; btn.textContent=old; btn.classList.remove("busy");
+  });
+}
+
+function gameDays(){
+  var d={}, out=[];
+  schedule.forEach(function(g){ if(!d[g.ymd]){ d[g.ymd]=1; out.push(g.ymd); } });
+  return out.sort();
+}
+function fmtDay(ymd){
+  var p=ymd.split("-"), dt=new Date(+p[0], +p[1]-1, +p[2]);
+  var wd=["일","월","화","수","목","금","토"][dt.getDay()];
+  var today=new Date();
+  var isToday = dt.toDateString()===today.toDateString();
+  return (+p[1])+"월 "+(+p[2])+"일 ("+wd+")" + (isToday ? " · 오늘" : "");
+}
+
+/* ---- 경기 모델 ----
+   1) 팀 전력: 올해 실제 승률(표본 보정)과 로스터 전력을 섞어 log5로 홈 승률의 기준선을 잡는다.
+   2) 거기서 피타고라스로 양 팀 기대 득점을 역산한다.
+   3) 오늘 선발이 "그 팀 로테이션 평균"보다 얼마나 좋은지를 실점으로 환산해 기대 득점을 깎는다.
+      절대 성적이 아니라 로테이션 평균 대비로 보는 게 핵심이다.
+      팀 전력에는 이미 로테이션 전체가 들어 있어서, 절대 성적을 또 더하면 같은 걸 두 번 세게 된다.
+   4) 그 기대 득점으로 스코어를 뽑는다. 승률과 스코어가 같은 숫자에서 나오므로 서로 어긋나지 않는다. */
+var LG_RUNS = 5.1;
+var PYTH = 1.83;          /* KBO 피타고라스 지수 */
+var HOME_EDGE = 0.032;    /* KBO 홈 승률 실측 약 .532 */
+var SP_IP = 5.3;          /* 선발 평균 소화 이닝 */
+var ERA_REG = 150;        /* 투수 ERA는 150이닝쯤 쌓여야 절반쯤 믿을 만하다.
+                             적게 던진 투수일수록 리그 평균 쪽으로 크게 당긴다. */
+var WPCT_REG = 62;        /* 팀 승률을 5할 쪽으로 당기는 가상 경기 */
+var NOW_W = 0.55;         /* 오늘 경기 전력 중 올해 실적 비중 */
+var RUN_K = 6;            /* 팀 득점 분산 계수 — 분산/평균 ≈ 1.85로 실제 야구에 맞춘다 */
+var ENV_K = 30;           /* 그날 경기 환경(구장·날씨·심판존) — 두 팀에 함께 걸린다.
+                             양 팀 득점 상관이 실제 야구 수준(약 .09)이 되는 값 */
+var TEAM_K = 8;           /* 팀 고유 기복. ENV_K와 합쳐 분산/평균 1.85를 만든다 */
+var EXT_RATE = 0.62;      /* 연장은 정규 이닝보다 점수가 덜 난다 */
+
+function unitsOf(key){
+  var m=computeAll();
+  for(var i=0;i<m.length;i++) if(m[i].key===key) return m[i];
+  return null;
+}
+function pois(lam){
+  if(lam<=0) return 0;
+  var L=Math.exp(-lam), k=0, p=1;
+  do { k++; p*=Math.random(); } while(p>L);
+  return k-1;
+}
+/* 평균 1짜리 감마 난수 — 클수록 산포가 작다 */
+function gam(k){
+  var s=0;
+  for(var i=0;i<k;i++) s -= Math.log(Math.random()+1e-12);
+  return s/k;
+}
+/* 야구 득점은 포아송보다 훨씬 널뛴다. 감마-포아송(음이항)으로 분산을 실제에 맞춘다.
+   여기에 그 경기 공통 요인(env)을 곱해 두 팀 득점이 같이 움직이게 한다.
+   1/RUN_K = 1/ENV_K + 1/TEAM_K 이라서 팀 득점 분산은 그대로고 점수차만 좁아진다. */
+function runsOf(mean, env){
+  if(mean<=0) return 0;
+  return pois(mean * (env||1) * gam(TEAM_K));
+}
+/* 이닝이 적은 투수의 ERA는 믿을 게 못 된다. 리그 평균 쪽으로 당겨 쓴다. */
+function regEra(p){
+  if(!p || p.t!=="P") return LG_ERA;
+  return (p.era*p.ip + LG_ERA*ERA_REG) / (p.ip + ERA_REG);
+}
+/* 그 팀 로테이션의 평균 수준 = 팀 전력에 이미 반영돼 있는 기준선 */
+function rotEra(key){
+  var sp=rosterOf(key).filter(isSP).sort(function(a,b){ return b.ip-a.ip; }).slice(0,5);
+  if(!sp.length) return LG_ERA;
+  var num=0, den=0;
+  sp.forEach(function(p){ var w=Math.max(p.ip,15); num+=regEra(p)*w; den+=w; });
+  return num/den;
+}
+/* 오늘 선발이 로테이션 평균보다 몇 점을 덜 주느냐 (+면 덜 준다) */
+function spRuns(key, p){
+  if(!p || p.t!=="P") return 0;
+  return clamp((rotEra(key) - regEra(p)) * SP_IP/9, -1.6, 1.6);
+}
+/* 올해 실적 + 로스터 전력 */
+function nowTalent(key, rosterNow){
+  var t=teamOf(key), r=recOf(t), n=r.w+r.l;
+  /* 팀 승률에는 운이 섞여 있다. 62경기치를 5할 쪽으로 당겨 실력만 남긴다 */
+  var act = n>0 ? (r.w + 0.5*WPCT_REG)/(n + WPCT_REG) : 0.5;
+  return clamp(NOW_W*act + (1-NOW_W)*rosterNow, 0.30, 0.70);
+}
+/* ---- 기대 득점 ----
+   두 갈래로 구해서 반씩 섞는다.
+   ① 팀 전력(올해 승률+로스터)에서 피타고라스로 역산한 값 — 수비·주루·구장까지 통째로 담긴다.
+   ② 오늘 라인업의 타격 지표 × 상대 투수진(선발 5.3이닝 + 불펜 3.7이닝) — 오늘의 구체적 정보다.
+   ①만 쓰면 누가 나오는지를 못 보고, ②만 쓰면 타격 지표에 없는 것들을 놓친다. */
+var LG_RA9 = 5.11;        /* 리그 9이닝당 총실점 */
+var ER_TO_R = 1.09;       /* 자책 대비 총실점 */
+var OPS_EXP = 1.90;       /* 팀 OPS가 10% 오르면 득점은 약 20% 오른다 */
+var LINE_W = 0.35;        /* 라인업 경로 비중 — 팀 전력에 없는 "오늘 누가 나오나"만 더한다 */
+var FORM_W = 0.15;        /* 최근 폼 비중 — 야구에서 팀 폼의 예측력은 생각보다 약하다 */
+var HOME_RUN_EDGE = 0.036;  /* 홈팀이 득점을 약 3.6% 더 낸다 → 승률 +3.2%p */
+
+var _mv = 0, _mc = {};
+function bumpModel(){ _mv++; _mc = {}; }
+function memo(k, f){
+  if(_mc[k]===undefined) _mc[k]=f();
+  return _mc[k];
+}
+/* 불펜 평균 수준 */
+function penEra(key){
+  return memo("pen:"+key, function(){
+    var rp=rosterOf(key).filter(function(p){ return p.t==="P" && !isSP(p); })
+      .sort(function(a,b){ return b.ip-a.ip; }).slice(0,7);
+    if(!rp.length) return LG_ERA;
+    var n=0, d=0;
+    rp.forEach(function(p){ var w=Math.max(p.ip,10); n+=regEra(p)*w; d+=w; });
+    return n/d;
+  });
+}
+/* 오늘 상대가 받아낼 9이닝 실점 */
+function oppRA9(key, starter){
+  var sp = starter ? regEra(starter) : rotEra(key);
+  return (sp*SP_IP + penEra(key)*(9-SP_IP))/9 * ER_TO_R;
+}
+/* 오늘 라인업의 타격 수준. 라인업이 없으면 타석 많은 9명으로 대신한다. */
+function lineupOps(key, gid){
+  return memo("ops:"+key+":"+(gid||"-"), function(){
+    var lu=gid ? lineups[gid] : null, list=[], seen={};
+    var pool=rosterOf(key).filter(function(p){ return p.t==="H"; })
+      .sort(function(a,b){ return b.pa-a.pa; });
+    if(lu && lu[key] && lu[key].bat.length>=6){
+      lu[key].bat.slice(0,9).forEach(function(b){
+        var p=playerByRoman(key, b.n);
+        if(p && p.t==="H" && !seen[p.n]){ seen[p.n]=1; list.push(p); }
+      });
+    }
+    /* 9명이 안 되면 평소 주전으로 채운다 */
+    for(var q=0; q<pool.length && list.length<9; q++){
+      if(!seen[pool[q].n]){ seen[pool[q].n]=1; list.push(pool[q]); }
+    }
+    if(list.length<5) list=pool.slice(0,9);
+    if(!list.length) return LG_OPS;
+    var n=0, d=0;
+    list.forEach(function(p){
+      var w=Math.max(p.pa,60);
+      /* 잘함 지수를 손댔으면 그만큼 반영 */
+      var adj=1 + (contribution(p)-baseScore(p))/100*0.35;
+      n += p.ops*adj*w; d += w;
+    });
+    return n/d;
+  });
+}
+/* 최근 경기 득점 흐름. 표본이 작아서 아주 약하게만 넣는다. */
+function formFactor(key){
+  var h=(state.hist||{})[key];
+  if(!h || h.length<5) return 1;
+  var last=h.slice(-8), rs=0;
+  last.forEach(function(x){ rs += (parseInt(String(x.s).split("-")[0],10)||0); });
+  var r=(rs/last.length)/LG_RUNS;
+  return clamp(1+(r-1)*FORM_W, 0.92, 1.08);
+}
+/* 오늘 라인업이 그 팀 기본 라인업보다 얼마나 센가 (1.00이면 평소 그대로) */
+function offAdj(key, gid){
+  var base=lineupOps(key, null), now=lineupOps(key, gid);
+  if(!base) return 1;
+  return clamp(Math.pow(now/base, OPS_EXP), 0.82, 1.20);
+}
+/* 오늘 선발이 그 팀 로테이션 평균보다 얼마나 막아주나 (1.00이면 평균 등판) */
+function defAdj(key, st){
+  var base=oppRA9(key, null);
+  if(!base) return 1;
+  return clamp(oppRA9(key, st)/base, 0.78, 1.24);
+}
+function gameModel(g, sAway, sHome){
+  var m=computeAll(), A=null, H=null;
+  for(var i=0;i<m.length;i++){
+    if(m[i].key===g.away) A=m[i];
+    if(m[i].key===g.home) H=m[i];
+  }
+  if(!A || !H) return { p:0.5, eA:LG_RUNS, eH:LG_RUNS, base:0.5, rA:0, rH:0,
+                        tA:0.5, tH:0.5, oA:LG_OPS, oH:LG_OPS, dA:LG_RA9, dH:LG_RA9, fA:1, fH:1 };
+  var a=nowTalent(g.away, A.rpct), h=nowTalent(g.home, H.rpct);
+  var base=clamp((h - h*a)/(h + a - 2*h*a) + HOME_EDGE, 0.28, 0.72);
+
+  /* 팀 전력에서 선발·라인업과 무관한 기준 기대 득점을 뽑는다 */
+  var ratio=Math.pow(base/(1-base), 1/PYTH);
+  var eH0=2*LG_RUNS*ratio/(1+ratio), eA0=2*LG_RUNS/(1+ratio);
+
+  /* 여기에 오늘의 정보만 곱한다. 평소 라인업 + 선발 미정이면 1.00이라 아무것도 안 바뀐다.
+     그래서 팀 간 비교는 순수 전력 모델 그대로 남고, 오늘 정보가 있을 때만 움직인다. */
+  var oaA=offAdj(g.away, g.id), oaH=offAdj(g.home, g.id);
+  var daH=defAdj(g.home, sHome), daA=defAdj(g.away, sAway);
+  var fA=formFactor(g.away), fH=formFactor(g.home);
+  var eA=clamp(eA0*oaA*daH*fA, 2.0, 9.5);
+  var eH=clamp(eH0*oaH*daA*fH, 2.0, 9.5);
+  var oA=lineupOps(g.away, g.id), oH=lineupOps(g.home, g.id);
+  var dA=oppRA9(g.away, sAway), dH=oppRA9(g.home, sHome);
+  var rA=spRuns(g.away, sAway), rH=spRuns(g.home, sHome);
+
+  var p=clamp(Math.pow(eH,PYTH)/(Math.pow(eH,PYTH)+Math.pow(eA,PYTH)), 0.22, 0.78);
+  var tot=eA+eH, r2=Math.pow(p/(1-p), 1/PYTH);
+  eH=tot*r2/(1+r2); eA=tot/(1+r2);
+  return { p:p, eA:eA, eH:eH, base:base, rA:rA, rH:rH, tA:a, tH:h,
+           oA:oA, oH:oH, dA:dA, dH:dH, fA:fA, fH:fH,
+           oaA:oaA, oaH:oaH, daA:daA, daH:daH, eA0:eA0, eH0:eH0 };
+}
+
+function homeWinPct(g, sAway, sHome){ return gameModel(g, sAway, sHome).p; }
+
+/* 한 경기에서 이 선수가 잘했을 때/못했을 때 팀 득점(투수는 상대 득점)이 얼마나 움직이나.
+   시즌 지표가 아니라 그날 하루치라서, 기여도가 높을수록 폭이 크다. */
+function pctFromRuns(own, opp){
+  own=Math.max(0.4,own); opp=Math.max(0.4,opp);
+  var a=Math.pow(own,PYTH), b=Math.pow(opp,PYTH);
+  return a/(a+b);
+}
+function batSwing(p){
+  var q=contribution(p)/100;
+  return { up: 0.45+1.15*q, dn: -(0.35+0.55*q) };
+}
+function pitSwing(p){
+  var q=contribution(p)/100;
+  return { up: -(0.55+1.15*q), dn: 0.55+0.95*q };
+}
+function ownPct(g, key, hp){ return key===g.home ? hp : 1-hp; }
+function pp(x){ return (x>=0?"+":"\u2212")+Math.abs(x*100).toFixed(1)+"%p"; }
+function simGame(g, sAway, sHome, n){
+  var M=gameModel(g, sAway, sHome);
+  var eA=M.eA, eH=M.eH;
+  var aw=0, hw=0, tie=0, tally={}, sumA=0, sumH=0, one=0;
+  for(var i=0;i<n;i++){
+    var env=gam(ENV_K);
+    var a=runsOf(eA, env), h=runsOf(eH, env), ext=0;
+    if(ext===0){
+      var k=a+"-"+h;
+      tally[k]=(tally[k]||0)+1;
+      sumA+=a; sumH+=h;
+      if(Math.abs(a-h)===1) one++;
+    }
+    while(a===h && ext<3){                                  /* KBO 12회 제한 */
+      a+=pois(eA/9*EXT_RATE*env); h+=pois(eH/9*EXT_RATE*env); ext++;
+    }
+    if(a>h) aw++; else if(h>a) hw++; else tie++;
+  }
+  var top=Object.keys(tally).sort(function(x,y){ return tally[y]-tally[x]; }).slice(0,5)
+    .map(function(k){ return {s:k, p:tally[k]/n}; });
+  var out={ away:aw/n, home:hw/n, tie:tie/n, top:top,
+            mA:sumA/n, mH:sumH/n, one:one/n };
+  for(var k in M) if(Object.prototype.hasOwnProperty.call(M,k)) out[k]=M[k];
+  out.eA=eA; out.eH=eH;
+  return out;
+}
+
+/* ---- 화면 ---- */
+var lineups = {};        /* 경기 id -> {팀키:{bat:[],pit:[]}} */
+var lineupState = {};    /* 경기 id -> loading | done | fail */
+
+function isMine(g){ return !!state.myTeam && (g.away===state.myTeam || g.home===state.myTeam); }
+/* My team 경기를 맨 위로, 그 다음 진행 중 → 예정 → 종료 순 */
+function gameSortRank(g){
+  var mine = isMine(g) ? 0 : 1;
+  var st = g.status==="진행" ? 0 : (g.status==="예정" ? 1 : (g.status==="종료" ? 2 : 3));
+  return mine*10 + st;
+}
+function gamesOn(ymd){
+  return schedule.filter(function(g){ return g.ymd===ymd; })
+    .map(function(g,i){ return {g:g, i:i}; })
+    .sort(function(a,b){
+      var d=gameSortRank(a.g)-gameSortRank(b.g);
+      return d ? d : a.i-b.i;
+    })
+    .map(function(x){ return x.g; });
+}
+function renderGames(){
+  var days=gameDays();
+  var box=document.getElementById("gameList");
+  var dbox=document.getElementById("gDate");
+  box.textContent=""; dbox.textContent="";
+  if(!days.length){
+    var e=document.createElement("div"); e.className="empty";
+    e.textContent="경기 일정이 없습니다. 위 버튼을 눌러 불러오세요.";
+    box.appendChild(e); return;
+  }
+  gDayIdx=Math.max(0, Math.min(days.length-1, gDayIdx));
+  var ymd=days[gDayIdx];
+  dbox.textContent=fmtDay(ymd);
+  dbox.className="gdate"; anim(dbox, "pop");
+  var today=gamesOn(ymd);
+  if(!today.length){
+    var e2=document.createElement("div"); e2.className="empty";
+    e2.textContent="이 날은 경기가 없습니다.";
+    box.appendChild(e2);
+  }
+  var stillSel=false;
+  today.forEach(function(g, gi){
+    if(gSel===g.id) stillSel=true;
+    var A=teamOf(g.away), H=teamOf(g.home);
+    var r=simGame(g, null, null, 3000);
+    var card=document.createElement("div");
+    card.className="gc rise"+(gSel===g.id?" on":"")+(isMine(g)?" mine":"");
+    card.style.setProperty("--i", gi);
+    var hd=document.createElement("div"); hd.className="gt2";
+    var st=document.createElement("span");
+    st.className="st"+(g.status!=="진행"?" fin":"");
+    st.textContent = g.status==="진행" ? (inningKr(g.inning)||"진행") : g.status;
+    hd.appendChild(st);
+    if(isMine(g)){
+      var mt=document.createElement("span"); mt.className="mytag"; mt.textContent="My team";
+      hd.appendChild(mt);
+    }
+    if(g.time){ var tt=document.createElement("span"); tt.textContent=g.time; hd.appendChild(tt); }
+    if(g.park){ var pk=document.createElement("span"); pk.textContent=PARK_KR[g.park]||g.park; hd.appendChild(pk); }
+    card.appendChild(hd);
+    [[A,g.aScore,r.away,"원정"],[H,g.hScore,r.home,"홈"]].forEach(function(x){
+      var row=document.createElement("div"); row.className="gside";
+      var nm=document.createElement("span"); nm.className="nm";
+      nm.textContent=x[0].short + (state.myTeam===x[0].key?" ★":"");
+      nm.style.background=x[0].color; nm.style.color=inkOn(x[0].color);
+      row.appendChild(nm);
+      if(x[1]!==null && x[1]!==undefined){
+        var sc=document.createElement("span"); sc.className="sc"; sc.textContent=x[1];
+        row.appendChild(sc);
+      } else {
+        var wp=document.createElement("span"); wp.className="wp";
+        wp.textContent="승리 "+pc(x[2]);
+        row.appendChild(wp);
+      }
+      card.appendChild(row);
+    });
+    var bar=document.createElement("div"); bar.className="gbar";
+    var i1=document.createElement("i"); i1.style.background=A.color;
+    var i2=document.createElement("i"); i2.style.background=H.color;
+    bar.appendChild(i1); bar.appendChild(i2);
+    card.appendChild(bar);
+    grow(i1, r.away*100, 90+gi*70);
+    grow(i2, r.home*100, 90+gi*70);
+    card.addEventListener("click", function(){
+      gSel = (gSel===g.id) ? null : g.id;
+      renderGames(); renderGameDetail(gSel ? g : null);
+    });
+    box.appendChild(card);
+  });
+  if(gSel && !stillSel){ gSel=null; renderGameDetail(null); }
+}
+/* 투수 전원에서 고를 수 있게 한다. 시즌 중에 불펜에서 선발로 돌린 선수도 있으니까. */
+function starterSelect(teamKey, onPick){
+  var sel2=document.createElement("select");
+  var op0=document.createElement("option"); op0.value=""; op0.textContent="선발 미정";
+  sel2.appendChild(op0);
+  var all=rosterOf(teamKey).filter(function(p){ return p.t==="P"; })
+    .sort(function(a,b){ return b.ip-a.ip; });
+  function grp(label, list){
+    if(!list.length) return;
+    var og=document.createElement("optgroup"); og.label=label;
+    list.forEach(function(p){
+      var op=document.createElement("option"); op.value=p.n;
+      op.textContent=p.n+" ("+p.era.toFixed(2)+" · "+p.ip.toFixed(0)+"이닝)";
+      og.appendChild(op);
+    });
+    sel2.appendChild(og);
+  }
+  grp("선발", all.filter(isSP));
+  grp("마무리", all.filter(function(p){ return !isSP(p) && roleOf(p)==="CP"; }));
+  grp("불펜", all.filter(function(p){ return !isSP(p) && roleOf(p)!=="CP"; }));
+  sel2.addEventListener("change", function(){ onPick(sel2.value ? playerByName(sel2.value) : null); });
+  return sel2;
+}
+
+/* ---- 라인업 ----
+   MyKBO 경기 페이지는 선수마다 /players/1234-Hong-Gil-dong-Samsung-Lions 링크를 단다.
+   링크 뒤에 붙는 첫 토큰이 포지션이면 타자, 방어율·성적이면 투수로 본다. */
+var BPOS=/^(C|1B|2B|3B|SS|LF|CF|RF|DH|PH|PR)$/;
+function playerByRoman(teamKey, roman){
+  var norm=function(x){ return String(x||"").toLowerCase().replace(/[^a-z]/g,""); };
+  var t=norm(roman), list=rosterOf(teamKey), i;
+  for(i=0;i<list.length;i++) if(list[i].r===roman) return list[i];
+  for(i=0;i<list.length;i++) if(norm(list[i].r)===t) return list[i];
+  return null;
+}
+function parseLineup(html, away, home){
+  var res={}; res[away]={bat:[],pit:[]}; res[home]={bat:[],pit:[]};
+  var re=/\/players\/\d+-[A-Za-z0-9-]+?-([A-Za-z]+)-[A-Za-z]+"[^>]*>([\s\S]*?)<\/a>/g, m;
+  while((m=re.exec(html))){
+    var k=slugKey(m[1]); if(!k || !res[k]) continue;
+    var nm=m[2].replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").replace(/\s+/g," ").trim();
+    if(!nm || nm.length>28 || !/[A-Za-z]/.test(nm)) continue;
+    var tail=html.slice(re.lastIndex, re.lastIndex+200)
+      .replace(/<[^>]+>/g,"|").replace(/&nbsp;/g," ");
+    var no=(tail.match(/#\s*(\d+)/)||[])[1] || "";
+    var toks=tail.replace(/#\s*\d+/,"").split("|")
+      .map(function(x){ return x.trim(); }).filter(function(x){ return x; });
+    var first=toks[0]||"";
+    var side=res[k];
+    if(BPOS.test(first)){
+      if(!side.bat.some(function(x){ return x.n===nm; })) side.bat.push({n:nm, no:no, pos:first});
+    } else if(/^\d+\.\d{1,2}/.test(first) || /^\d+\s*-\s*\d+/.test(first)){
+      if(!side.pit.some(function(x){ return x.n===nm; })) side.pit.push({n:nm, no:no});
+    }
+  }
+  var any=res[away].bat.length+res[away].pit.length+res[home].bat.length+res[home].pit.length;
+  return any ? res : null;
+}
+function loadLineup(g, cb){
+  if(!g.url){ lineupState[g.id]="fail"; cb(); return; }
+  if(lineupState[g.id]==="loading") return;
+  lineupState[g.id]="loading"; cb();
+  fetchVia(g.url, "/players/").then(function(html){
+    var lu=parseLineup(html, g.away, g.home);
+    if(!lu) throw new Error("empty");
+    lineups[g.id]=lu; lineupState[g.id]="done";
+  }).catch(function(){ lineupState[g.id]="fail"; })
+    .then(function(){ cb(); });
+}
+
+/* ---- 분석용 계산 ---- */
+function keyBatters(key, lu, n){
+  var list=[], seen={};
+  if(lu && lu[key] && lu[key].bat.length){
+    lu[key].bat.forEach(function(b){
+      var p=playerByRoman(key, b.n);
+      if(p && p.t==="H" && !seen[p.n]){ seen[p.n]=1; list.push(p); }
+    });
+  }
+  if(list.length<3){
+    rosterOf(key).forEach(function(p){ if(p.t==="H" && !seen[p.n]){ seen[p.n]=1; list.push(p); } });
+  }
+  list.sort(function(a,b){ return contribution(b)-contribution(a); });
+  return list.slice(0,n);
+}
+
+function renderGameDetail(g){
+  var box=document.getElementById("gameDetail");
+  box.textContent="";
+  if(!g) return;
+  var A=teamOf(g.away), H=teamOf(g.home);
+  var sA=null, sH=null, selA=null, selH=null, autoDone=false;
+  var wrap=document.createElement("div"); wrap.className="gd drop";
+
+  var head=document.createElement("h3");
+  head.textContent=A.name+" (원정) vs "+H.name+" (홈)";
+  wrap.appendChild(head);
+
+  var wp=document.createElement("div"); wp.className="gwp";
+  var big=document.createElement("span"); big.className="big";
+  var sm=document.createElement("span"); sm.className="sm";
+  wp.appendChild(big); wp.appendChild(sm);
+  wrap.appendChild(wp);
+
+  /* 예측 득점 */
+  var ps=document.createElement("div"); ps.className="pscore";
+  var psA=document.createElement("div"), psM=document.createElement("div"), psH=document.createElement("div");
+  psA.className="pside"; psH.className="pside"; psM.className="pmid";
+  ps.appendChild(psA); ps.appendChild(psM); ps.appendChild(psH);
+  wrap.appendChild(ps);
+  var psNote=document.createElement("div"); psNote.className="axnote";
+  psNote.style.margin="4px 0 2px";
+  wrap.appendChild(psNote);
+  var sc=document.createElement("div"); sc.className="scores";
+  wrap.appendChild(sc);
+
+  var pick=document.createElement("div"); pick.className="pick2";
+  [[A, function(p){ sA=p; paint(); }],[H, function(p){ sH=p; paint(); }]].forEach(function(x, k){
+    var d=document.createElement("div");
+    var l=document.createElement("label"); l.textContent=x[0].short+" 선발";
+    var s=starterSelect(x[0].key, x[1]);
+    if(k===0) selA=s; else selH=s;
+    d.appendChild(l); d.appendChild(s);
+    pick.appendChild(d);
+  });
+  wrap.appendChild(pick);
+
+  var luMsg=document.createElement("div"); luMsg.className="axnote";
+  wrap.appendChild(luMsg);
+  var luBox=document.createElement("div"); luBox.className="lu";
+  wrap.appendChild(luBox);
+
+  var cmpH=document.createElement("div"); cmpH.className="axnote";
+  cmpH.style.margin="12px 0 2px";
+  cmpH.textContent="부문 비교 — 리그 평균이 50점인 지수";
+  wrap.appendChild(cmpH);
+  var cmp=document.createElement("div"); cmp.className="cmp";
+  wrap.appendChild(cmp);
+
+  var anaH=document.createElement("div"); anaH.className="gt";
+  anaH.style.margin="16px 0 6px"; anaH.textContent="경기 분석";
+  wrap.appendChild(anaH);
+  var ana=document.createElement("div"); ana.className="ana";
+  wrap.appendChild(ana);
+
+  var blkN=0;
+  function block(title){
+    var d=document.createElement("div"); d.className="anab rise";
+    d.style.setProperty("--i", blkN++);
+    var h4=document.createElement("div"); h4.className="anah"; h4.textContent=title;
+    d.appendChild(h4);
+    ana.appendChild(d);
+    return d;
+  }
+  /* 숫자만 굵게 나오도록 문장을 조립한다 */
+  function say(box2, parts){
+    var pEl=document.createElement("p");
+    parts.forEach(function(x){
+      if(x && x.b!==undefined){
+        var b2=document.createElement("b"); b2.textContent=x.b; pEl.appendChild(b2);
+      } else pEl.appendChild(document.createTextNode(String(x)));
+    });
+    box2.appendChild(pEl);
+    return pEl;
+  }
+  function bar(box2, rows){
+    var l=document.createElement("div"); l.className="oplist";
+    var mx=Math.max.apply(null, rows.map(function(r){ return r.v; }));
+    var mn=Math.min.apply(null, rows.map(function(r){ return r.v; }));
+    rows.forEach(function(r, i){
+      var e=document.createElement("div"); e.className="oprow"+(r.on?" on":"");
+      var n=document.createElement("span"); n.className="opn"; n.textContent=r.n;
+      var t=document.createElement("span"); t.className="opbar";
+      var f=document.createElement("i"); f.style.background=r.c||"var(--accent)";
+      t.appendChild(f);
+      var v=document.createElement("span"); v.className="opv"; v.textContent=pc(r.v);
+      e.appendChild(n); e.appendChild(t); e.appendChild(v);
+      l.appendChild(e);
+      var w = mx>mn ? 18+(r.v-mn)/(mx-mn)*82 : 60;
+      grow(f, w, 100+i*60);
+    });
+    box2.appendChild(l);
+  }
+
+  function drawLineups(){
+    luBox.textContent="";
+    var stt=lineupState[g.id];
+    if(stt==="loading"){ luMsg.textContent="라인업을 불러오는 중…"; return; }
+    if(stt==="fail"){ luMsg.textContent="라인업은 아직 발표 전이거나 불러오지 못했습니다. 선발은 직접 골라도 됩니다."; return; }
+    if(stt!=="done"){ luMsg.textContent=""; return; }
+    var lu=lineups[g.id];
+    luMsg.textContent="MyKBO 경기 페이지에서 읽어온 라인업입니다. 괄호 안은 100점 만점 기여 점수.";
+    [A,H].forEach(function(T){
+      var side=lu[T.key]; if(!side) return;
+      var col=document.createElement("div"); col.className="lucol rise";
+      var h4=document.createElement("div"); h4.className="luh";
+      h4.textContent=T.short; h4.style.background=T.color; h4.style.color=inkOn(T.color);
+      col.appendChild(h4);
+      if(side.pit.length){
+        var pr=document.createElement("div"); pr.className="lup";
+        var mine=playerByRoman(T.key, side.pit[0].n);
+        pr.textContent="선발 "+(mine ? mine.n : side.pit[0].n)
+          + (mine ? " (기여 "+contribution(mine)+")" : "");
+        col.appendChild(pr);
+      }
+      side.bat.slice(0,9).forEach(function(b, i){
+        var r=document.createElement("div"); r.className="lur";
+        var mine=playerByRoman(T.key, b.n);
+        var n1=document.createElement("span"); n1.className="luo"; n1.textContent=(i+1);
+        var n2=document.createElement("span"); n2.className="lun";
+        n2.textContent=(mine ? mine.n : b.n);
+        n2.title=b.n;
+        var n3=document.createElement("span"); n3.className="lupos"; n3.textContent=b.pos;
+        r.appendChild(n1); r.appendChild(n2); r.appendChild(n3);
+        col.appendChild(r);
+      });
+      if(!side.bat.length && !side.pit.length){
+        var em=document.createElement("div"); em.className="lur"; em.textContent="발표 전";
+        col.appendChild(em);
+      }
+      luBox.appendChild(col);
+    });
+    if(!autoDone){
+      autoDone=true;
+      var changed=false;
+      [[A, lu[A.key], function(p){ sA=p; if(selA) selA.value=p.n; }],
+       [H, lu[H.key], function(p){ sH=p; if(selH) selH.value=p.n; }]].forEach(function(x){
+        if(!x[1] || !x[1].pit.length) return;
+        var p=playerByRoman(x[0].key, x[1].pit[0].n);
+        if(p && p.t==="P"){ x[2](p); changed=true; }
+      });
+      if(changed) paint();
+    }
+  }
+
+  function paint(){
+    var r=simGame(g, sA, sH, 12000);
+    var favA = r.away >= r.home;
+    big.textContent=(favA?A.short:H.short)+" "+pc(favA?r.away:r.home);
+    anim(big, "pulse");
+    sm.textContent="상대 "+pc(favA?r.home:r.away)+(r.tie>0.002?" · 무승부 "+pc(r.tie):"");
+
+    /* 예측 득점 */
+    psA.textContent=""; psH.textContent=""; psM.textContent="";
+    [[psA, A, r.eA],[psH, H, r.eH]].forEach(function(x){
+      var nm=document.createElement("span"); nm.className="pt";
+      nm.textContent=x[1].short;
+      nm.style.background=x[1].color; nm.style.color=inkOn(x[1].color);
+      var v=document.createElement("b"); v.textContent="0.0";
+      x[0].appendChild(nm); x[0].appendChild(v);
+      countUp(v, x[2], function(q){ return q.toFixed(1); }, 700);
+    });
+    psM.textContent="예측 득점";
+    var lik=r.top[0];
+    psNote.textContent = lik
+      ? "가장 자주 나온 스코어 "+A.short+" "+lik.s.split("-")[0]+" · "+H.short+" "+lik.s.split("-")[1]
+        +" ("+(lik.p*100).toFixed(1)+"%)"
+      : "";
+    sc.textContent="";
+    r.top.forEach(function(x, i){
+      var q=x.s.split("-");
+      var e=document.createElement("span"); e.className="rise";
+      e.style.setProperty("--i", i);
+      e.textContent=A.short+" "+q[0]+" · "+H.short+" "+q[1]+"  "+(x.p*100).toFixed(1)+"%";
+      sc.appendChild(e);
+    });
+
+    var mA=unitsOf(g.away), mH=unitsOf(g.home);
+    cmp.textContent="";
+    var units=[["선발",mA.rot,mH.rot],["불펜",mA.pen,mH.pen],["타선",mA.off,mH.off],["뎁스",mA.dep,mH.dep]];
+    units.forEach(function(row, ri){
+      var a=row[1], h=row[2], tot=a+h||1;
+      var e1=document.createElement("div"); e1.className="v"; e1.textContent=a.toFixed(0);
+      var b1=document.createElement("div"); b1.className="barL";
+      var i1=document.createElement("i"); i1.style.background=A.color;
+      b1.appendChild(i1);
+      var lb=document.createElement("div"); lb.className="lab"; lb.textContent=row[0];
+      var b2=document.createElement("div"); b2.className="barR";
+      var i2=document.createElement("i"); i2.style.background=H.color;
+      b2.appendChild(i2);
+      var e2=document.createElement("div"); e2.className="v"; e2.textContent=h.toFixed(0);
+      [e1,b1,lb,b2,e2].forEach(function(x){ cmp.appendChild(x); });
+      grow(i1, a/tot*100, 120+ri*90);
+      grow(i2, h/tot*100, 120+ri*90);
+    });
+    writeAnalysis(r, mA, mH, units);
+  }
+  paint();
+  box.appendChild(wrap);
+  if(lineupState[g.id]==="done" || lineupState[g.id]==="fail") drawLineups();
+  else loadLineup(g, function(){ drawLineups(); });
+
+  /* ---- 분석 ---- */
+  function writeAnalysis(r, mA, mH, units){
+    ana.textContent=""; blkN=0;
+    var hp=r.p;
+    var M0=gameModel(g, null, null);
+    var flat=M0.p;
+    var favT = r.away>=r.home ? A : H;
+    var favP = r.away>=r.home ? r.away : r.home;
+
+    /* ① 결론 */
+    var b1=block("한 줄 결론");
+    say(b1, ["오늘은 ", {b:favT.name}, " 쪽이 ", {b:pc(favP)}, "로 앞선다. ",
+      "두 팀의 올해 전력에 홈 이점, 그날 선발을 얹어 12,000번 돌린 결과다."]);
+
+    /* ② 전력 */
+    var b2=block("전력 차이");
+    say(b2, [A.short+"의 오늘 전력 지수는 ", {b:(M0.tA*100).toFixed(1)},
+      ", "+H.short+"은 ", {b:(M0.tH*100).toFixed(1)}, "이다. ",
+      "올해 실제 승률(운을 걷어낸 값)과 지금 로스터 전력을 반반씩 섞은 숫자다. ",
+      "이 둘만 맞붙이면 홈팀 "+H.short+" 승률이 ", {b:pc(M0.base-HOME_EDGE)},
+      "이고, 여기에 KBO 평균 홈 이점 ", {b:"3.2%p"}, "를 더해 ", {b:pc(M0.base)}, "에서 출발한다."]);
+
+    /* ②-2 기대 득점이 나온 과정 */
+    var bE=block("예측 득점이 나온 과정");
+    say(bE, ["팀 전력만으로 잡은 기준 득점은 "+A.short+" ", {b:M0.eA0.toFixed(2)},
+      "점, "+H.short+" ", {b:M0.eH0.toFixed(2)}, "점이다. 여기에 오늘 정보를 곱한다."]);
+    var rows=[
+      [A.short+" 타선", r.oaA, "오늘 라인업이 평소 대비"],
+      [H.short+" 선발·불펜", r.daH, H.short+" 마운드가 평소 대비"],
+      [A.short+" 최근 흐름", r.fA, "최근 8경기 득점"],
+      [H.short+" 타선", r.oaH, "오늘 라인업이 평소 대비"],
+      [A.short+" 선발·불펜", r.daA, A.short+" 마운드가 평소 대비"],
+      [H.short+" 최근 흐름", r.fH, "최근 8경기 득점"]
+    ];
+    var moved=rows.filter(function(x){ return Math.abs(x[1]-1)>0.005; });
+    if(moved.length){
+      var ml=document.createElement("div"); ml.className="oplist";
+      moved.forEach(function(x, i){
+        var e=document.createElement("div"); e.className="oprow";
+        var n1=document.createElement("span"); n1.className="opn"; n1.textContent=x[0];
+        var t1=document.createElement("span"); t1.className="opbar";
+        var f1=document.createElement("i");
+        f1.style.background = x[1]<1 ? "var(--pos)" : "var(--neg)";
+        t1.appendChild(f1);
+        var v1=document.createElement("span"); v1.className="opv";
+        v1.textContent="×"+x[1].toFixed(3);
+        v1.title=x[2];
+        e.appendChild(n1); e.appendChild(t1); e.appendChild(v1);
+        ml.appendChild(e);
+        grow(f1, Math.min(100, Math.abs(x[1]-1)/0.25*100), 120+i*60);
+      });
+      bE.appendChild(ml);
+    }
+    say(bE, ["곱한 결과가 "+A.short+" ", {b:r.eA.toFixed(2)}, "점, "+H.short+" ", {b:r.eH.toFixed(2)},
+      "점이고, 이 득점 차이를 피타고라스 승률로 옮긴 게 위의 확률이다. ",
+      "타선 계수는 오늘 라인업 9명의 OPS를 그 팀 평소 라인업과 비교한 값이고, ",
+      "마운드 계수는 선발이 5.3이닝, 불펜이 3.7이닝을 맡는다고 보고 계산한 9이닝 실점이다. ",
+      "최근 흐름은 표본이 작아 예측력이 약해서 ", {b:"15%"}, "만 반영한다."]);
+
+    /* ③ 승부처 */
+    var b3=block("승부처");
+    var lines=[];
+    units.forEach(function(u){
+      var d=u[1]-u[2];
+      var stem = Math.abs(d)<3
+        ? J(u[0])+" "+u[1].toFixed(0)+" 대 "+u[2].toFixed(0)+"로 팽팽하"
+        : J(u[0])+" "+Ji(d>0?A.short:H.short)+" "+u[1].toFixed(0)+" 대 "+u[2].toFixed(0)
+          +"로 "+Math.abs(d).toFixed(0)+"점 앞서";
+      lines.push({ mid:stem+"고", end: Math.abs(d)<3 ? stem+"다" : stem.slice(0,-1)+"선다" });
+    });
+    var big1=units.slice().sort(function(x,y){ return Math.abs(y[1]-y[2])-Math.abs(x[1]-x[2]); })[0];
+    var win1=big1[1]>big1[2]?A.short:H.short, lose1=big1[1]>big1[2]?H.short:A.short;
+    var joined = lines.length>1
+      ? lines.slice(0,-1).map(function(x){ return x.mid; }).join(", ")+", "+lines[lines.length-1].end
+      : lines[0].end;
+    say(b3, [joined+". 격차가 가장 큰 쪽은 ", {b:big1[0]}, "이고, ",
+      Ji(win1)+" 여기서 벌어 놓은 만큼을 "+Ji(lose1)+" 다른 데서 메워야 하는 구도다."]);
+
+    /* ④ 선발 매치업 */
+    var b4=block("선발 매치업");
+    if(sA || sH){
+      say(b4, [
+        (sA ? A.short+" "+sA.n : A.short+" 선발 미정")+" 대 "+(sH ? H.short+" "+sH.n : H.short+" 선발 미정")+". ",
+        "중요한 건 절대 성적이 아니라 ", {b:"그 팀 로테이션 평균과의 차이"}, "다. ",
+        "팀 전력에는 이미 로테이션 전체가 들어 있어서, 평균만큼 하는 선발은 확률을 움직이지 않는다."]);
+      [[A, g.away, sA, r.daA],[H, g.home, sH, r.daH]].forEach(function(x){
+        var T=x[0], key=x[1], cur=x[2], adj=x[3];
+        if(!cur) return;
+        say(b4, [T.short+" 로테이션 평균 ERA는 ", {b:rotEra(key).toFixed(2)},
+          "이고 "+cur.n+"의 보정 ERA는 ", {b:regEra(cur).toFixed(2)}, "다. ",
+          "불펜 ", {b:penEra(key).toFixed(2)}, "까지 합치면 오늘 "+T.short+" 마운드의 9이닝 실점은 ",
+          {b:oppRA9(key, cur).toFixed(2)+"점"}, "이다. 평소 등판보다 상대 득점을 ",
+          {b:Math.abs((adj-1)*100).toFixed(1)+"%"}, (adj<1 ? " 줄인다." : " 늘린다."),
+          (Math.abs(adj-1)<0.01 ? " 사실상 평균 등판이다." : "")]);
+      });
+      say(b4, ["보정 ERA는 시즌 ERA를 그대로 쓰지 않는다. 투수 ERA는 150이닝쯤 쌓여야 절반쯤 믿을 만해서, ",
+        "적게 던진 투수일수록 리그 평균 쪽으로 당겨 쓴다. ",
+        "그래서 30이닝 방어율 1점대 투수가 에이스로 둔갑하지 않는다."]);
+      say(b4, ["선발을 비우면 홈 승률이 ", {b:pc(flat)}, "인데, 오늘 조합을 넣으면 ", {b:pc(hp)},
+        "다. 마운드 조합만으로 ", {b:pp(hp-flat)}, " 움직였다."]);
+    } else {
+      say(b4, ["아직 양 팀 선발이 확정되지 않았다. 지금 값은 두 팀 로테이션 평균이 맞붙는다고 본 결과이고, ",
+        "위에서 선발을 골라 보면 한 명만 바꿔도 승률이 ", {b:"10%p"}, " 넘게 흔들린다."]);
+    }
+
+    /* ⑤ 선발 후보별 승률 */
+    [[A, g.away, sA, function(p){ return homeWinPct(g, p, sH); }],
+     [H, g.home, sH, function(p){ return homeWinPct(g, sA, p); }]].forEach(function(x){
+      var T=x[0], key=x[1], cur=x[2], f=x[3];
+      var rot=rosterOf(key).filter(isSP).sort(function(a,b){ return b.ip-a.ip; }).slice(0,5);
+      if(rot.length<2) return;
+      var bk=block(T.short+" 선발이 누구냐에 따라");
+      bar(bk, rot.map(function(p){
+        return { n:p.n+" ("+p.era.toFixed(2)+")", v:ownPct(g, key, f(p)), c:T.color, on:cur===p };
+      }));
+      var best=rot.slice().sort(function(a,b){ return f(b)-f(a); });
+      var bestP = key===g.home ? best[0] : best[best.length-1];
+      say(bk, [T.short+"에게 가장 좋은 카드는 ", {b:bestP.n},
+        "이고, 오늘은 "+(cur ? cur.n+"이 나온다." : "예고가 없다.")]);
+    });
+
+    /* ⑥⑦ 키 플레이어 */
+    var lu=lineups[g.id];
+    [[A, g.away, sA, r.eA, r.eH],[H, g.home, sH, r.eH, r.eA]].forEach(function(x){
+      var T=x[0], key=x[1], st=x[2], eOwn=x[3], eOpp=x[4];
+      var base=pctFromRuns(eOwn, eOpp);
+      var items=[];
+      if(st){
+        var pss=pitSwing(st);
+        items.push({ n:st.n, kind:"선발", sc:contribution(st),
+          up:pctFromRuns(eOwn, eOpp+pss.up), dn:pctFromRuns(eOwn, eOpp+pss.dn) });
+      }
+      keyBatters(key, lu, 4).forEach(function(p){
+        var bs=batSwing(p);
+        items.push({ n:p.n, kind:"타자", sc:contribution(p),
+          up:pctFromRuns(eOwn+bs.up, eOpp), dn:pctFromRuns(eOwn+bs.dn, eOpp) });
+      });
+      if(!items.length) return;
+      items.sort(function(a,b){ return (b.up-b.dn)-(a.up-a.dn); });
+      var bk=block(T.short+" — 누가 해주면 이기나");
+      say(bk, [T.short+"의 기본 승률은 ", {b:pc(base)},
+        ". 오늘 이 선수들이 터지느냐 묶이느냐로 아래만큼 움직인다."]);
+      var kl=document.createElement("div"); kl.className="klist";
+      items.forEach(function(it, i){
+        var row=document.createElement("div"); row.className="krow rise";
+        row.style.setProperty("--i", i);
+        var n=document.createElement("span"); n.className="kn";
+        n.textContent=it.n;
+        var tag=document.createElement("em"); tag.textContent=it.kind+" "+it.sc;
+        n.appendChild(tag);
+        var lo=document.createElement("span"); lo.className="kv dn"; lo.textContent=pc(it.dn);
+        var tr=document.createElement("span"); tr.className="ktrack";
+        var fill=document.createElement("i");
+        tr.appendChild(fill);
+        var hi=document.createElement("span"); hi.className="kv up"; hi.textContent=pc(it.up);
+        row.appendChild(n); row.appendChild(lo); row.appendChild(tr); row.appendChild(hi);
+        kl.appendChild(row);
+        grow(fill, (it.up-it.dn)*100/0.30*100, 140+i*70);
+      });
+      bk.appendChild(kl);
+      var top1=items[0];
+      say(bk, ["폭이 가장 큰 건 ", {b:top1.n}, "으로 혼자 ", {b:((top1.up-top1.dn)*100).toFixed(1)+"%p"},
+        "를 좌우한다. 이런 선수가 두세 명 같이 터지면 전력 차이는 쉽게 뒤집힌다."]);
+    });
+
+    /* ⑧ 흐름 */
+    var b8=block("경기 흐름");
+    var pen = mA.pen>=mH.pen ? A : H;
+    var off = mA.off>=mH.off ? A : H;
+    say(b8, ["예측 득점은 "+A.short+" ", {b:r.eA.toFixed(2)}, "점, "+H.short+" ", {b:r.eH.toFixed(2)}, "점. ",
+      "접전으로 7회를 넘기면 불펜이 두꺼운 ", {b:pen.short}, "이 유리하고, ",
+      "초반에 벌어지면 타선이 좋은 ", {b:off.short}, "이 그대로 굳힐 가능성이 높다."]);
+    say(b8, ["이 확률은 12,000번 돌린 평균이라 실제 한 경기는 이 분포 어디든 떨어진다. "
+      + "야구가 그래서 재미있는 거고."
+      + (g.aScore!==null ? " 참고로 이 경기는 이미 시작됐거나 끝나서 실제 결과와 다를 수 있다." : "")]);
+  }
+}
+
+
 /* ================= 탭 ================= */
 function showTab(which){
-  [["Rank","paneRank"],["Sim","paneSim"],["News","paneNews"]].forEach(function(x){
+  [["Game","paneGame"],["Rank","paneRank"],["Sim","paneSim"],["News","paneNews"]].forEach(function(x){
     var b=document.getElementById("tab"+x[0]), p=document.getElementById(x[1]);
     var on = x[0]===which;
     b.className = on ? "on" : "";
-    p.className = on ? "pane on" : "pane";
+    if(on && p.className.indexOf("on")<0){ p.className="pane on"; anim(p,"on"); }
+    else p.className = on ? "pane on" : "pane";
     b.setAttribute("aria-selected", on ? "true" : "false");
   });
   window.scrollTo({top:0, behavior:"smooth"});
 }
+document.getElementById("tabGame").addEventListener("click", function(){ showTab("Game"); });
+document.getElementById("bGames").addEventListener("click", function(){ loadGames(this); });
+document.getElementById("bPrevDay").addEventListener("click", function(){
+  gDayIdx--; gSel=null; renderGames(); renderGameDetail(null);
+});
+document.getElementById("bNextDay").addEventListener("click", function(){
+  gDayIdx++; gSel=null; renderGames(); renderGameDetail(null);
+});
+document.getElementById("subPred").addEventListener("click", function(){ showRank("pred"); });
+document.getElementById("subNow").addEventListener("click", function(){ showRank("now"); });
 document.getElementById("tabRank").addEventListener("click", function(){ showTab("Rank"); });
 document.getElementById("tabSim").addEventListener("click", function(){ showTab("Sim"); });
 document.getElementById("tabNews").addEventListener("click", function(){ showTab("News"); });
@@ -2359,6 +4110,7 @@ renderLog();
 renderFeed();
 renderChips();
 renderBoost();
+renderNewsChips();
 initAddForm();
 if(state.myTeam) sel=state.myTeam;
 run();

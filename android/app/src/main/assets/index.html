@@ -110,6 +110,43 @@ section{margin-top:22px}
 .plist td{border-bottom:1px solid var(--line); padding:5px 4px; white-space:nowrap; text-align:right}
 .plist .nm{text-align:left; font-weight:500}
 .plist .ag{text-align:left; font-size:11px; color:var(--ink3); white-space:nowrap}
+/* 오늘의 한 줄 */
+.daily{border:1px solid var(--line2); border-radius:12px; padding:14px 15px; margin-bottom:14px;
+  background:linear-gradient(180deg, var(--bg2), var(--bg)); overflow:hidden}
+.daily .dk{font-size:11px; letter-spacing:.04em; color:var(--ink3); font-weight:700}
+.daily .dbig{font-size:26px; font-weight:800; line-height:1.15; margin:6px 0 3px;
+  font-variant-numeric:tabular-nums}
+.daily .dsub{font-size:13px; line-height:1.5; color:var(--ink2)}
+.daily .dlist{margin-top:10px; padding-top:10px; border-top:1px solid var(--line)}
+.daily .di{display:flex; gap:8px; align-items:baseline; padding:4px 0; font-size:12.5px}
+.daily .di b{flex:0 0 auto}
+.daily .di span{color:var(--ink2)}
+.daily .streak{display:inline-flex; gap:3px; margin-left:6px; vertical-align:1px}
+.daily .streak i{width:7px; height:7px; border-radius:2px; display:block}
+.daily .streak i.w{background:var(--pos)} .daily .streak i.l{background:var(--neg)}
+.pstab{margin-top:6px}
+.psrow{display:flex; align-items:center; gap:10px; padding:8px 2px; border-bottom:1px solid var(--line)}
+.psrow.pshead{font-size:11px; color:var(--ink3); border-bottom:1px solid var(--line2); padding-bottom:5px}
+.psrow .psn{flex:0 0 92px; min-width:0}
+.psrow .psn .pt{display:inline-block; max-width:100%; padding:3px 9px; border-radius:5px;
+  font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* 막대와 숫자를 같은 자리에 겹치지 않게 — 막대는 자기 칸 안에서만 자란다 */
+.psrow .psv{flex:1; display:flex; align-items:center; gap:7px; min-width:0}
+.psrow .psv .pstrack{flex:1; height:5px; border-radius:3px; background:var(--line);
+  overflow:hidden; min-width:14px}
+.psrow .psv .pstrack i{display:block; height:100%; width:0; border-radius:3px;
+  transition:width .8s var(--ease)}
+.psrow .psv u{flex:0 0 46px; text-align:right; text-decoration:none; font-size:12px;
+  font-weight:700; font-variant-numeric:tabular-nums}
+.psrow.pshead .psv{justify-content:flex-end}
+@media(max-width:380px){ .psrow{gap:7px} .psrow .psn{flex:0 0 76px} .psrow .psv u{flex:0 0 42px} }
+.brk{margin-top:4px}
+.brkrow{display:flex; align-items:center; gap:8px; padding:8px 2px; border-bottom:1px solid var(--line)}
+.brkl{flex:0 0 82px; font-size:11.5px; color:var(--ink3)}
+.brkm{display:flex; align-items:center; gap:6px}
+.brkm i{font-style:normal; font-size:11px; color:var(--ink3)}
+.brkx{margin-left:auto; font-size:11px; color:var(--ink3); text-align:right}
+@media(max-width:400px){ .brkx{display:none} .psrow .psn{flex:0 0 64px} }
 .posb{display:inline-block; margin-left:5px; padding:1px 5px; border-radius:999px;
   border:1px solid var(--line2); font-size:10px; font-weight:700; color:var(--ink3);
   background:var(--bg2); vertical-align:1px}
@@ -560,6 +597,7 @@ html{scroll-behavior:smooth}
   </nav>
 
   <div class="pane" id="paneGame">
+    <div id="daily"></div>
     <section>
       <div class="shd"><h2>경기 일정</h2><span class="note" id="gameMsg"></span></div>
       <div class="row" style="margin-top:0">
@@ -585,16 +623,14 @@ html{scroll-behavior:smooth}
     <div class="sub2tab">
       <button id="subPred" class="on">예상 순위</button>
       <button id="subNow">현재 순위</button>
+      <button id="subPS">포스트시즌</button>
     </div>
     <div class="slist" id="tb"></div>
     <div class="slist" id="tbNow" hidden></div>
+    <div id="tbPS" hidden></div>
     <div id="detail"></div>
   </section>
 
-  <section>
-    <div class="shd"><h2>순위 분포</h2><span class="note">칸이 진할수록 그 순위 확률이 높음</span></div>
-    <div class="scroll"><div class="heat" id="heat"></div></div>
-  </section>
 
   </div><!-- /paneRank -->
 
@@ -626,10 +662,13 @@ html{scroll-behavior:smooth}
         표본이 모이면 홈 이점·구장 계수 같은 상수를 실측값으로 바꿉니다.
         야구 단일 경기 예측의 현실적인 적중률 상한은 <b>57~60%</b>입니다.</p>
       <div id="labCards"></div>
-      <div class="shd" style="margin-top:18px"><h2>확률 보정도</h2>
-        <span class="note">"60%라고 한 경기가 진짜 60% 이겼나"</span></div>
+      <div class="shd" style="margin-top:18px"><h2>확률이 정직한가</h2></div>
+      <p class="hint" id="calHint">모델이 "60%쯤 이긴다"고 본 경기들이 <b>진짜로 10번 중 6번</b> 이겼는지 봅니다.
+        말한 확률과 실제가 가까울수록 믿고 볼 수 있는 숫자입니다.</p>
+      <div id="calSum" class="axnote" style="margin-bottom:8px"></div>
       <div id="labCal"></div>
-      <div class="shd" style="margin-top:18px"><h2>모델이 배운 것</h2></div>
+      <div class="shd" style="margin-top:18px"><h2>AI 모델이 배운 것</h2>
+        <span class="note">채점이 쌓일수록 스스로 값을 고쳐 나갑니다</span></div>
       <div id="labLearn"></div>
       <div class="row" style="margin-top:12px">
         <button class="btn" id="bLabApply">배운 값 적용</button>
@@ -738,7 +777,7 @@ LG 박동원, FA 계약으로 KIA 이적"></textarea>
   <footer>
     <p>기본 전력은 직전 5시즌 승률을 최근 쪽에 0.55씩 더 무겁게 준 가중 평균(1 / 0.55 / 0.30 / 0.17 / 0.09)으로 묶은 뒤, 리그 평균 쪽으로 0.60 회귀시켜 만듭니다. 2016~2026 기록으로 2021~2026 여섯 시즌을 실제로 맞혀보고 고른 값입니다. 평균 순위오차 2.37로, 전년 성적만 쓰는 방식(2.60)이나 최근 2년 평균(2.47)보다 나았고 구간을 바꿔가며 확인해도 순위가 뒤집히지 않았습니다.</p>
     <p>여기에 2026 선수 기록으로 계산한 로스터 전력을 40% 얹고, 이탈로 표시한 선수의 기여 승수를 75%만큼 뺍니다. 능력치 오각형은 규정 이닝·타석을 넘긴 리그 전체 선수 분포에서의 백분위라 투수는 투수끼리, 타자는 타자끼리 같은 기준으로 비교됩니다.</p>
-    <p>선수 기록은 MyKBO Stats 2026년 9월 10일 기준, 과거 순위는 위키피디아 KBO 시즌 문서입니다. 한글 이름은 영문 표기에서 옮긴 것이라 일부 다를 수 있습니다.</p>
+    <p>선수 기록은 MyKBO Stats에서 가져오며 <b>업데이트를 누를 때마다 최신 기록으로 갱신</b>됩니다. 과거 순위는 위키피디아 KBO 시즌 문서입니다. 한글 이름은 영문 표기에서 옮긴 것이라 일부 다를 수 있습니다.</p>
     <p class="by">제안, 문의 <a href="mailto:jaehokwak11@gmail.com">jaehokwak11@gmail.com</a></p>
   </footer>
 </div>
@@ -1066,6 +1105,7 @@ function adopt(o){
   state.pred = o.pred || {};
   state.grade = o.grade || [];
   state.tune = o.tune || {};
+  PROB_SPREAD = 1;
   applyTune();
   state.custom = o.custom || [];
   mountCustom();
@@ -1392,16 +1432,395 @@ function renderNow(){
 }
 function showRank(mode){
   rankMode=mode;
-  var pred = mode==="pred";
+  var pred = mode==="pred", ps = mode==="ps", now = mode==="now";
   document.getElementById("subPred").className = pred?"on":"";
-  document.getElementById("subNow").className = pred?"":"on";
+  document.getElementById("subNow").className = now?"on":"";
+  document.getElementById("subPS").className = ps?"on":"";
   document.getElementById("tb").hidden = !pred;
-  document.getElementById("tbNow").hidden = pred;
-  document.getElementById("rankTitle").textContent = pred ? "다음 시즌 예상" : "2026 현재 순위";
+  document.getElementById("tbNow").hidden = !now;
+  document.getElementById("tbPS").hidden = !ps;
+  document.getElementById("rankTitle").textContent =
+    pred ? "다음 시즌 예상" : (ps ? "가을야구 전망" : "2026 현재 순위");
   document.getElementById("simNote").textContent = pred
     ? sims.toLocaleString()+"회 시뮬레이션"
-    : (state.statStamp ? "마지막 업데이트 " + state.statStamp : "업데이트 전 · 2026.09.10 기록");
-  if(!pred) renderNow();
+    : (ps ? sims.toLocaleString()+"회 대진 시뮬레이션"
+          : (state.statStamp ? "마지막 업데이트 " + state.statStamp : "기록 업데이트 전"));
+  if(now) renderNow();
+  if(ps) renderPS();
+}
+/* ---------- 오늘의 한 줄 ----------
+   매일 열어 볼 이유를 위에 하나 띄운다.
+   ① 내 예측이 요즘 얼마나 맞고 있나 ② 오늘 제일 볼 만한 경기
+   ③ 오늘 터질 수 있는 기록 ④ 이 경기가 순위에 뭘 바꾸나 */
+function streakInfo(){
+  var G=(state.grade||[]).filter(function(x){ return !x.back && x.hit!==null; });
+  if(!G.length) return null;
+  G.sort(function(a,b){ return a.ymd<b.ymd ? -1 : (a.ymd>b.ymd ? 1 : 0); });
+  var recent=G.slice(-8);
+  var cur=G[G.length-1].hit, n=0;
+  for(var i=G.length-1;i>=0;i--){ if(G[i].hit===cur) n++; else break; }
+  return { hit:cur, n:n, recent:recent.map(function(x){ return x.hit; }),
+           total:G.length, rate: G.filter(function(x){ return x.hit; }).length/G.length };
+}
+var MILE_H = { hr:[10,20,30,40,50], rbi:[50,80,100,120], bb:[50,80,100] };
+var MILE_P = { so:[100,150,180,200], ip:[100,150,180,200] };
+/* 오늘 나올 선수 중 동그란 숫자가 코앞인 기록을 찾는다 */
+function milestones(gs){
+  var out=[], seen={};
+  gs.forEach(function(g){
+    [g.away, g.home].forEach(function(k){
+      rosterOf(k).forEach(function(p2){
+        if(seen[p2.n]) return;
+        var tab = p2.t==="P" ? MILE_P : MILE_H;
+        Object.keys(tab).forEach(function(f){
+          var v=p2[f];
+          if(typeof v!=="number" || !v) return;
+          tab[f].forEach(function(m){
+            var gap=m-v;
+            if(gap<=0) return;
+            var near = (f==="hr") ? gap<=2 : (f==="ip" ? gap<=6 : gap<=5);
+            if(!near) return;
+            seen[p2.n]=1;
+            var label={hr:"홈런", rbi:"타점", bb:"볼넷", so:"탈삼진", ip:"이닝"}[f];
+            out.push({ p:p2, key:k, txt:p2.n+" "+label+" "+(f==="ip"?v.toFixed(1):v)
+              +" — "+m+(f==="ip"?"이닝":"개")+"까지 "+(f==="ip"?gap.toFixed(1):gap)+(f==="ip"?"이닝":"개"),
+              gap:gap, m:m });
+          });
+        });
+      });
+    });
+  });
+  return out.sort(function(a,b){ return (a.gap/a.m)-(b.gap/b.m); }).slice(0,3);
+}
+/* 이 경기 결과가 가을야구 확률을 얼마나 흔드나 */
+function psSwing(g){
+  var O=psOdds(1500);
+  var by={}; O.forEach(function(x){ by[x.key]=x; });
+  var a=by[g.away], h=by[g.home];
+  if(!a || !h) return null;
+  if(a.ps>0.985 && h.ps>0.985) return null;
+  if(a.ps<0.015 && h.ps<0.015) return null;
+  var pick = (a.ps>0.02 && a.ps<0.98) ? g.away : g.home;
+  var q=by[pick];
+  return { key:pick, ps:q.ps };
+}
+function renderDaily(){
+  var box=document.getElementById("daily");
+  if(!box) return;
+  box.textContent="";
+  var days=gameDays(), ymd=days[gDayIdx] || "";
+  var gs=gamesOn(ymd);
+  if(!gs.length) return;
+  var card=document.createElement("div"); card.className="daily drop";
+
+  /* 큰 줄 — 오늘 제일 팽팽한 경기 */
+  var scored=gs.map(function(g){
+    var r=simGameC(g, null, null, 3000);
+    return { g:g, r:r, gap:Math.abs(r.pShown-0.5) };
+  }).sort(function(x,y){ return x.gap-y.gap; });
+  var top=scored[0];
+  var A=teamOf(top.g.away), H=teamOf(top.g.home);
+  var favIsA = top.r.away>=top.r.home;
+  var favT = favIsA ? A : H, favP = favIsA ? top.r.away : top.r.home;
+
+  var k=document.createElement("div"); k.className="dk";
+  k.textContent=SP("오늘의 최대어","오늘 이건 봐야 한다");
+  card.appendChild(k);
+  var big=document.createElement("div"); big.className="dbig";
+  big.textContent=A.short+" vs "+H.short+"  "+pc(favP);
+  big.style.color=teamInk(favT.color);
+  card.appendChild(big);
+  var sub=document.createElement("div"); sub.className="dsub";
+  sub.textContent = top.gap<0.03
+    ? SP("오늘 경기 중 가장 팽팽합니다. 사실상 반반입니다.",
+         "오늘 중 제일 팽팽하다. 이건 그냥 뚜껑 열어봐야 안다.")
+    : SP(favT.short+"가 조금 앞서지만 오늘 경기 중에서는 가장 박빙입니다.",
+         favT.short+"가 조금 낫긴 한데, 오늘 판 중에선 제일 모른다.");
+  card.appendChild(sub);
+
+  var listEl=document.createElement("div"); listEl.className="dlist";
+  var add=function(label, text, extra){
+    var d=document.createElement("div"); d.className="di";
+    var b2=document.createElement("b"); b2.textContent=label;
+    var sp=document.createElement("span"); sp.textContent=text;
+    d.appendChild(b2); d.appendChild(sp);
+    if(extra) d.appendChild(extra);
+    listEl.appendChild(d);
+  };
+
+  /* 내 예측 연속 기록 */
+  var st=streakInfo();
+  if(st){
+    var strEl=document.createElement("span"); strEl.className="streak";
+    st.recent.forEach(function(hv){
+      var i2=document.createElement("i"); i2.className = hv ? "w" : "l"; strEl.appendChild(i2);
+    });
+    add(SP("나의 예측","내 촉"),
+      st.n>=2
+        ? (st.hit ? SP(st.n+"연속 적중 중 · 통산 "+pc(st.rate),
+                       st.n+"연속으로 맞히는 중이다 · 통산 "+pc(st.rate))
+                  : SP(st.n+"연속 빗나감 · 통산 "+pc(st.rate),
+                       st.n+"연속으로 틀렸다… 통산 "+pc(st.rate)))
+        : SP("최근 "+st.total+"경기 적중률 "+pc(st.rate),
+             "최근 "+st.total+"경기 "+pc(st.rate)+" 맞혔다"),
+      strEl);
+  }
+
+  /* 오늘 걸린 기록 */
+  var ms=milestones(gs);
+  if(ms.length) add(SP("오늘 터질 수도","오늘 사고 나면 이거"), ms[0].txt);
+  if(ms.length>1) add("", ms[1].txt);
+
+  /* 순위·가을야구 의미 */
+  var sw=psSwing(top.g);
+  if(sw){
+    var T=teamOf(sw.key);
+    add(SP("걸린 것","여기 걸린 거"),
+      T.short+" 가을야구 확률 "+pc(sw.ps)+SP(" — 이 경기가 크게 흔듭니다.", " — 오늘 지면 진짜 곤란해진다."));
+  }
+  if(listEl.children.length) card.appendChild(listEl);
+  box.appendChild(card);
+}
+
+/* ---------- 가을야구 ----------
+   이건 "다음 시즌"이 아니라 "올 시즌"이다.
+   지금까지의 승패에서 출발해 남은 경기만 치르고, 그 순위로 실제 KBO 대진을 돌린다.
+   (예전에는 새 시즌을 처음부터 돌린 값을 쓰는 바람에 이미 탈락권인 팀도 50%가 나왔다.) */
+var GAMES_PER_SEASON = 144;
+var PS_HOME = 0.030;
+var PS_HOME5 = [1,1,0,0,1], PS_HOME7 = [1,1,0,0,0,1,1];
+function psSeries(pa, len){
+  var need=(len+1)/2, wa=0, wb=0, seq = len===7 ? PS_HOME7 : PS_HOME5;
+  for(var gi=0; gi<len && wa<need && wb<need; gi++){
+    var pg = pa + (seq[gi] ? PS_HOME : -PS_HOME);
+    if(pg<0.05) pg=0.05; else if(pg>0.95) pg=0.95;
+    if(RNG()<pg) wa++; else wb++;
+  }
+  return wa>wb;
+}
+/* 와일드카드 — 4위 홈 2연전, 4위는 1승만 하면 올라간다 */
+function psWC(pa){
+  var pg=pa+PS_HOME;
+  if(pg<0.05) pg=0.05; else if(pg>0.95) pg=0.95;
+  if(RNG()<pg) return true;
+  return RNG()<pg;
+}
+var psCache=null, psCacheKey="";
+function psOdds(n){
+  var key = _mv+"|"+n+"|"+schedule.length+"|"+JSON.stringify(state.teamRec||{});
+  if(psCache && psCacheKey===key) return psCache;
+  var N=TEAMS.length, idx={};
+  TEAMS.forEach(function(t,i){ idx[t.key]=i; });
+
+  /* 지금까지의 성적 */
+  var bw=new Int32Array(N), bl=new Int32Array(N), bd=new Int32Array(N);
+  TEAMS.forEach(function(t,i){ var r=recOf(t); bw[i]=r.w|0; bl[i]=r.l|0; bd[i]=r.d|0; });
+
+  /* 일정에 남아 있는 경기 — 각 경기의 홈 승률을 미리 구해 둔다 */
+  var rem=[], cnt=new Int32Array(N);
+  schedule.forEach(function(g){
+    if(g.status==="종료") return;
+    if(!(g.away in idx) || !(g.home in idx)) return;
+    var m=gameModel(g, null, null);
+    rem.push({ a:idx[g.away], h:idx[g.home], p:m.p });
+    cnt[idx[g.away]]++; cnt[idx[g.home]]++;
+  });
+
+  /* 일정을 아직 못 받은 잔여 경기는 리그 평균 상대로 채운다 */
+  var tal=TEAMS.map(function(t){ var m=last&&last.filter(function(x){return x.key===t.key;})[0];
+    return m && m.m ? m.m.talent : 0.5; });
+  var extra=new Int32Array(N);
+  for(var i=0;i<N;i++){
+    var played=bw[i]+bl[i]+bd[i];
+    var left=GAMES_PER_SEASON - played - cnt[i];
+    extra[i] = left>0 ? left : 0;
+  }
+
+  var cPS=new Float64Array(N), cKS=new Float64Array(N), cWIN=new Float64Array(N),
+      cSEED=new Float64Array(N*5);
+  var w=new Int32Array(N), l=new Int32Array(N), wp=new Float64Array(N);
+  var ord=[]; for(i=0;i<N;i++) ord.push(i);
+  var prev=RNG; RNG=seedRand("ps|"+key.slice(0,120));
+
+  for(var s2=0;s2<n;s2++){
+    for(i=0;i<N;i++){ w[i]=bw[i]; l[i]=bl[i]; }
+    for(var q=0;q<rem.length;q++){
+      var g2=rem[q];
+      if(RNG()<TIE_RATE) continue;                 /* 무승부는 승률 계산에서 빠진다 */
+      if(RNG()<g2.p){ w[g2.h]++; l[g2.a]++; } else { w[g2.a]++; l[g2.h]++; }
+    }
+    for(i=0;i<N;i++){
+      for(var e=0;e<extra[i];e++){
+        if(RNG()<TIE_RATE) continue;
+        if(RNG()<tal[i]) w[i]++; else l[i]++;
+      }
+      wp[i] = (w[i]+l[i]) ? w[i]/(w[i]+l[i]) : 0.5;
+    }
+    ord.sort(function(x,y){ var d=wp[y]-wp[x]; return d ? d : RNG()-0.5; });
+    for(i=0;i<5;i++){ cPS[ord[i]]++; cSEED[ord[i]*5+i]++; }
+    var a1=ord[0], a2=ord[1], a3=ord[2], a4=ord[3], a5=ord[4];
+    var log5=function(x,y){ var p1=wp[x], p2=wp[y];
+      var v=(p1-p1*p2)/(p1+p2-2*p1*p2); return isFinite(v)?v:0.5; };
+    var wc = psWC(log5(a4,a5)) ? a4 : a5;
+    var sp = psSeries(log5(a3,wc), 5) ? a3 : wc;
+    var po = psSeries(log5(a2,sp), 5) ? a2 : sp;
+    cKS[a1]++; cKS[po]++;
+    var ch = psSeries(log5(a1,po), 7) ? a1 : po;
+    cWIN[ch]++;
+  }
+  RNG=prev;
+  var out=TEAMS.map(function(t,k){
+    var seeds=[]; for(var r2=0;r2<5;r2++) seeds.push(cSEED[k*5+r2]/n);
+    return { key:t.key, ps:cPS[k]/n, ks:cKS[k]/n, win:cWIN[k]/n, seeds:seeds,
+      left: extra[k]+cnt[k], played: bw[k]+bl[k]+bd[k] };
+  });
+  psCache=out; psCacheKey=key;
+  return out;
+}
+/* 가을야구 전망 화면 */
+function psGames(){
+  /* 정규시즌(144경기) 뒤에 붙는 경기를 포스트시즌으로 본다.
+     일정에 10월 이후 경기가 들어오면 자동으로 여기 잡힌다. */
+  var out=[];
+  schedule.forEach(function(g){
+    if(!g.ymd) return;
+    var mm=+g.ymd.slice(5,7);
+    if(mm<10) return;
+    var tot=0;
+    TEAMS.forEach(function(t){ var r=recOf(t); tot+=(r.w+r.l+r.d); });
+    if(tot < GAMES_PER_SEASON*TEAMS.length*0.92) return;   /* 정규시즌이 거의 끝났을 때만 */
+    out.push(g);
+  });
+  return out.sort(function(a,b){ return a.ymd<b.ymd ? -1 : (a.ymd>b.ymd ? 1 : 0); });
+}
+function renderPS(){
+  var box=document.getElementById("tbPS");
+  box.textContent="";
+  if(!last || !last.length) return;
+  var O=psOdds(Math.min(sims, 8000));
+  var list=O.slice().sort(function(a,b){ return b.win-a.win || b.ps-a.ps; });
+  var live=psGames();
+
+  var note=document.createElement("p"); note.className="hint";
+  note.textContent=SP(
+    "지금까지의 승패에서 출발해 남은 경기를 끝까지 치른 뒤, 실제 KBO 방식(와일드카드 → 준플레이오프 → 플레이오프 → 한국시리즈)으로 대진을 돌린 결과입니다.",
+    "지금 성적 그대로 놓고 남은 일정 다 치러 본 결과다. 가을야구도 끝까지 붙여 봤다.");
+  box.appendChild(note);
+
+  var tbl=document.createElement("div"); tbl.className="pstab";
+  var hd=document.createElement("div"); hd.className="psrow pshead";
+  ["팀","가을야구","KS 진출","우승"].forEach(function(x,i){
+    var c=document.createElement("span"); c.className = i===0?"psn":"psv";
+    c.textContent=x; hd.appendChild(c);
+  });
+  tbl.appendChild(hd);
+
+  list.forEach(function(r, i){
+    var t=teamOf(r.key);
+    var row=document.createElement("div"); row.className="psrow rise";
+    row.style.setProperty("--i", i%10);
+    var nm=document.createElement("span"); nm.className="psn";
+    var badge=document.createElement("b"); badge.className="pt";
+    badge.textContent=t.short + (state.myTeam===t.key ? " ★" : "");
+    badge.style.background=t.color; badge.style.color=inkOn(t.color);
+    nm.appendChild(badge);
+    row.appendChild(nm);
+    [r.ps, r.ks, r.win].forEach(function(v){
+      var c=document.createElement("span"); c.className="psv";
+      var tr=document.createElement("span"); tr.className="pstrack";
+      var bar=document.createElement("i"); bar.style.background=teamFill(t.color);
+      tr.appendChild(bar);
+      var u=document.createElement("u"); u.textContent=pc(v);
+      u.style.color=teamInk(t.color);
+      c.appendChild(tr); c.appendChild(u);
+      row.appendChild(c);
+      grow(bar, v*100, 60+i*35);
+    });
+    tbl.appendChild(row);
+  });
+  box.appendChild(tbl);
+
+  /* 포스트시즌이 시작되면 대진과 결과를 여기서 그대로 보여준다 */
+  if(live.length){
+    var h1=document.createElement("div"); h1.className="shd"; h1.style.marginTop="18px";
+    var t1=document.createElement("h2"); t1.textContent=SP("가을야구 진행 상황","가을야구 현황");
+    h1.appendChild(t1); box.appendChild(h1);
+    var wrap=document.createElement("div"); wrap.className="brk";
+    var ser={};
+    live.forEach(function(g){
+      var k=[g.away,g.home].sort().join("|");
+      (ser[k]=ser[k]||[]).push(g);
+    });
+    Object.keys(ser).forEach(function(k){
+      var gs=ser[k], A=teamOf(gs[0].away), H=teamOf(gs[0].home);
+      var wA=0, wH=0, done=0;
+      gs.forEach(function(g){
+        if(g.aScore===null || g.aScore===undefined) return;
+        if(g.status!=="종료") return;
+        done++;
+        if(g.aScore>g.hScore) wA++; else if(g.hScore>g.aScore) wH++;
+      });
+      var d=document.createElement("div"); d.className="brkrow";
+      var l=document.createElement("span"); l.className="brkl";
+      l.textContent=gs[0].ymd.slice(5).replace("-",".");
+      var m2=document.createElement("span"); m2.className="brkm";
+      [[A,wA],[H,wH]].forEach(function(x, q){
+        var e=document.createElement("b"); e.className="pt";
+        e.textContent=x[0].short; e.style.background=x[0].color; e.style.color=inkOn(x[0].color);
+        m2.appendChild(e);
+        var sc=document.createElement("i"); sc.textContent=x[1];
+        sc.style.fontWeight="700"; sc.style.fontSize="13px";
+        m2.appendChild(sc);
+        if(q===0){ var vs=document.createElement("i"); vs.textContent="-"; m2.appendChild(vs); }
+      });
+      var x2=document.createElement("span"); x2.className="brkx";
+      x2.textContent = done ? done+"경기 종료" : "예정 "+gs.length+"경기";
+      d.appendChild(l); d.appendChild(m2); d.appendChild(x2);
+      wrap.appendChild(d);
+    });
+    box.appendChild(wrap);
+    var c2=document.createElement("p"); c2.className="hint";
+    c2.textContent="경기별 분석은 오늘의 경기 탭에서 그대로 볼 수 있습니다. 경기 불러오기를 누르면 여기도 같이 갱신됩니다.";
+    box.appendChild(c2);
+    return;
+  }
+
+  /* 아직 정규시즌이면 지금 순위 기준 예상 대진 */
+  var seedOrder=O.slice().sort(function(a,b){
+    var sa=0, sb=0;
+    for(var i2=0;i2<5;i2++){ sa+=a.seeds[i2]*(i2+1); sb+=b.seeds[i2]*(i2+1); }
+    sa += (1-a.ps)*20; sb += (1-b.ps)*20;
+    return sa-sb;
+  }).slice(0,5);
+  if(seedOrder.length===5){
+    var h2=document.createElement("div"); h2.className="shd"; h2.style.marginTop="18px";
+    var hh=document.createElement("h2"); hh.textContent=SP("이대로라면 이 대진","이대로 가면 이렇게 붙는다");
+    h2.appendChild(hh); box.appendChild(h2);
+    var br=document.createElement("div"); br.className="brk";
+    var step=function(label, a2, b2, extra){
+      var d=document.createElement("div"); d.className="brkrow";
+      var l=document.createElement("span"); l.className="brkl"; l.textContent=label;
+      var m2=document.createElement("span"); m2.className="brkm";
+      [a2,b2].forEach(function(k, q){
+        var tt=teamOf(k);
+        var e=document.createElement("b"); e.className="pt";
+        e.textContent=tt.short; e.style.background=tt.color; e.style.color=inkOn(tt.color);
+        m2.appendChild(e);
+        if(q===0){ var vs=document.createElement("i"); vs.textContent="vs"; m2.appendChild(vs); }
+      });
+      var x=document.createElement("span"); x.className="brkx"; x.textContent=extra||"";
+      d.appendChild(l); d.appendChild(m2); d.appendChild(x);
+      br.appendChild(d);
+    };
+    step("와일드카드", seedOrder[3].key, seedOrder[4].key, "2전 · 4위 1승 안고");
+    step("준플레이오프", seedOrder[2].key, seedOrder[3].key, "5전 3선승");
+    step("플레이오프", seedOrder[1].key, seedOrder[2].key, "5전 3선승");
+    step("한국시리즈", seedOrder[0].key, seedOrder[1].key, "7전 4선승");
+    box.appendChild(br);
+    var cap=document.createElement("p"); cap.className="hint";
+    cap.textContent="아래쪽 팀 자리에는 그 단계를 이기고 올라온 팀이 들어갑니다.";
+    box.appendChild(cap);
+  }
 }
 var rows={};
 function render(){
@@ -1472,39 +1891,11 @@ function render(){
   });
   if(rankMode==="pred") document.getElementById("simNote").textContent=sims.toLocaleString()+"회 시뮬레이션";
   if(rankMode==="now") renderNow();
-  heatmap(list);
+
 }
 
 /* ---------- 히트맵 ---------- */
 var hc={}, hbuilt=false;
-function heatmap(list){
-  var h=document.getElementById("heat");
-  if(!hbuilt){
-    var c0=document.createElement("div"); c0.className="hh"; c0.style.order=0; h.appendChild(c0);
-    for(var r=1;r<=10;r++){
-      var e=document.createElement("div"); e.className="hh"; e.textContent=r; e.style.order=0; h.appendChild(e);
-    }
-    TEAMS.forEach(function(t){
-      var lb=document.createElement("div"); lb.className="hl"; lb.textContent=t.short; h.appendChild(lb);
-      var cs=[];
-      for(var i=0;i<10;i++){ var d=document.createElement("div"); d.className="hc"; h.appendChild(d); cs.push(d); }
-      hc[t.key]={lb:lb, cs:cs};
-    });
-    hbuilt=true;
-  }
-  list.forEach(function(r,idx){
-    var g=hc[r.key];
-    g.lb.style.order=idx+1;
-    r.dist.forEach(function(p,i){
-      var c=g.cs[i]; c.style.order=idx+1;
-      var a=Math.pow(Math.min(p/0.45,1),0.7);
-      c.style.backgroundColor="rgba(var(--fill),"+(0.05+a*0.85).toFixed(3)+")";
-      c.textContent = p>=0.05 ? Math.round(p*100) : "";
-      c.title = teamOf(r.key).name+" "+(i+1)+"위 "+pc(p);
-    });
-  });
-}
-
 /* ---------- 레이더 ---------- */
 function radar(p){
   var S=118, C=S/2, R=40, v=axesOf(p), ax=p.t==="P"?AX_P:AX_H;
@@ -3042,7 +3433,9 @@ function refreshFree(btn){
     touch(); run();
     showRank(rankMode);
     renderLog(); renderCustom();
+    psCache=null;
     renderGames(); renderNow(); renderFeed(); renderNewsChips();
+    if(rankMode==="ps") renderPS();
     renderChips(); renderBoost();
     if(sel) renderDetail();
 
@@ -4355,6 +4748,9 @@ function loadGames(btn){
       + (fails ? " · "+fails+"주 실패" : "");
     renderGames();
     renderNow();
+    touch();                       /* 일정을 받았으면 바로 저장해 둔다 */
+    psCache=null;                  /* 일정이 바뀌었으니 가을야구 전망도 다시 */
+    if(rankMode==="ps") renderPS();
   }).then(function(){
     btn.disabled=false; btn.textContent=old; btn.classList.remove("busy");
   });
@@ -4786,7 +5182,15 @@ function simGame(g, sAway, sHome, n){
      연장·무승부까지 태우면 둘이 몇 %p 어긋나고, 심하면 우세 팀이 뒤집힌다.
      화면에는 시뮬레이션 값이 나가므로 채점도 그 값으로 해야 앞뒤가 맞는다.
      무승부는 판정에서 빼므로 무승부를 제외한 홈 승률로 만든다. */
-  out.pShown = (aw+hw) ? hw/(aw+hw) : M.p;
+  var tieR=tie/n;
+  var pRaw=(aw+hw) ? hw/(aw+hw) : M.p;
+  var pS=sharpen(pRaw);
+  /* 화면에 나가는 세 숫자도 같은 값에서 다시 만든다.
+     한쪽만 손보면 예전처럼 화면과 채점이 다른 팀을 가리키게 된다. */
+  out.pShown = pS;
+  out.tie  = tieR;
+  out.home = pS*(1-tieR);
+  out.away = (1-pS)*(1-tieR);
   return out;
 }
 
@@ -5074,6 +5478,7 @@ function renderGames(){
     box.appendChild(card);
   });
   if(gSel && !stillSel){ gSel=null; renderGameDetail(null); }
+  try{ renderDaily(); }catch(e){}
 }
 /* 투수 전원에서 고를 수 있게 한다. 시즌 중에 불펜에서 선발로 돌린 선수도 있으니까. */
 function starterSelect(teamKey, onPick){
@@ -6462,8 +6867,9 @@ function backfillGrades(){
     if(g.hScore===null || g.hScore===undefined) return;
     if(done[g.id]) return;
     var r=simGameC(g, null, null, SIM_N);
-    var pb=(typeof r.pShown==="number" ? r.pShown : (r?r.p:NaN));
-    if(!r || !isFinite(pb)) return;
+    if(!r) return;
+    var pb=(typeof r.pShown==="number" ? r.pShown : r.p);
+    if(typeof pb!=="number" || !isFinite(pb)) return;
     var winH = g.hScore>g.aScore, tie = g.hScore===g.aScore;
     state.grade.push({
       id:g.id, ymd:g.ymd, a:g.away, h:g.home, park:g.park||null,
@@ -6546,6 +6952,25 @@ function labLearn(){
       next:clamp(shrink(cur, real, v.n, 60), 0.80, 1.20), unit:"", scale:1, n:v.n,
       why:v.n+"경기 실제 총득점 "+(v.r/v.n).toFixed(1)+"점 (예측 "+(v.e/v.n).toFixed(1)+")" });
   });
+  /* 확률 폭 — "55%라고 한 경기가 실제로 몇 % 이겼나"를 로짓에서 비교해 기울기를 잰다.
+     기울기가 1보다 크면 지금이 너무 조심스러운 것이고, 1보다 작으면 과한 것이다.
+     50% 근처 구간은 기울기를 잴 수 없어 뺀다. */
+  var sn=0, sd=0, stot=0;
+  st.cal.forEach(function(b2){
+    if(!b2.n || b2.n<8 || typeof b2.said!=="number") return;
+    var sp2=clamp(b2.said,0.06,0.94), rp2=clamp(b2.real,0.06,0.94);
+    var ls=Math.log(sp2/(1-sp2)), lr=Math.log(rp2/(1-rp2));
+    if(Math.abs(ls)<0.10) return;
+    sn += lr*ls*b2.n; sd += ls*ls*b2.n; stot += b2.n;
+  });
+  if(stot>=40 && sd>0){
+    var slope=sn/sd;
+    out.push({ key:"PROB_SPREAD", label:"확률 폭", now:PROB_SPREAD,
+      next: clamp(shrink(PROB_SPREAD, slope, stot, 200), 0.70, 1.60),
+      unit:"배", scale:1, n:stot,
+      why: slope>1.05 ? "지금보다 과감하게 불러도 실제가 따라온다"
+         : (slope<0.95 ? "지금이 실제보다 세게 부르는 편이다" : "지금 폭이 실제와 맞는다") });
+  }
   return out.filter(function(x){ return Math.abs(x.next-x.now) > (x.key==="HOME_EDGE"?0.0015:0.004); });
 }
 function labApply(){
@@ -6558,10 +6983,21 @@ function labApply(){
   return L.length;
 }
 /* 저장해 둔 보정값을 실제 상수에 반영한다 */
+/* 확률 폭. 1이면 시뮬레이션 결과 그대로,
+   1보다 크면 더 과감하게(50%에서 멀게), 작으면 더 조심스럽게 부른다.
+   손으로 정하지 않고 채점 기록으로 학습한다. */
+var PROB_SPREAD = 1;
+function sharpen(p){
+  if(!(PROB_SPREAD>0) || PROB_SPREAD===1) return p;
+  if(p<=0.001) return 0.001; if(p>=0.999) return 0.999;
+  var lo=Math.log(p/(1-p))*PROB_SPREAD;
+  return 1/(1+Math.exp(-lo));
+}
 function applyTune(){
   var t=state.tune||{};
   if(typeof t.HOME_EDGE==="number") HOME_EDGE=t.HOME_EDGE;
   if(typeof t.LG_RUNS==="number") LG_RUNS=t.LG_RUNS;
+  if(typeof t.PROB_SPREAD==="number") PROB_SPREAD=t.PROB_SPREAD;
   Object.keys(t).forEach(function(k){
     if(k.indexOf("PARK:")===0){
       var pkey=k.slice(5);
@@ -6624,23 +7060,42 @@ function renderLab(){
   cards.appendChild(g2);
 
   /* 보정도 막대 */
+  /* 구간별로 "이렇게 봤는데 실제로는 이랬다"를 한 줄씩 읽히게 쓴다 */
+  var calN=0, calOff=0, calDir=0;
   st.cal.forEach(function(b, i){
     if(!b.n) return;
+    calN+=b.n; calOff += Math.abs(b.real-b.said)*b.n; calDir += (b.said-b.real)*b.n;
     var row=document.createElement("div"); row.className="oprow";
     var n1=document.createElement("span"); n1.className="opn";
-    n1.textContent=Math.round(b.lo*100)+"~"+Math.round(b.hi*100)+"% ("+b.n+")";
+    n1.textContent=Math.round(b.said*100)+"%쯤 봤던 "+b.n+"경기";
     var tr=document.createElement("span"); tr.className="opbar";
     var f1=document.createElement("i");
     var off=Math.abs(b.real-b.said);
     f1.style.background = off<0.06 ? "var(--pos)" : off<0.12 ? "var(--warn)" : "var(--neg)";
     tr.appendChild(f1);
     var v1=document.createElement("span"); v1.className="opv";
-    v1.textContent=pc(b.real);
-    v1.title="모델이 말한 평균 "+pc(b.said);
+    v1.textContent="실제 "+pc(b.real);
+    v1.title="모델이 말한 평균 "+pc(b.said)+" · 실제 "+pc(b.real);
     row.appendChild(n1); row.appendChild(tr); row.appendChild(v1);
     cal.appendChild(row);
     grow(f1, b.real*100, 80+i*60);
   });
+  var cs=document.getElementById("calSum");
+  if(cs){
+    if(!calN) cs.textContent="";
+    else {
+      var avgOff=calOff/calN, dir=calDir/calN;
+      cs.textContent = avgOff<0.06
+        ? SP("말한 확률과 실제가 거의 같습니다. 이 숫자는 그대로 믿어도 됩니다.",
+             "말한 대로 나왔다. 이 숫자는 믿어도 된다.")
+        : (dir>0
+           ? SP("말한 확률보다 실제가 낮습니다. 모델이 조금 자신 있어 하는 편이니 감안해서 보세요.",
+                "입만 살았다. 실제보다 세게 부르는 중이니 조금 깎아서 보면 된다.")
+           : SP("말한 확률보다 실제가 높습니다. 모델이 조금 조심스러운 편입니다.",
+                "생각보다 잘 맞혔다. 모델이 괜히 몸을 사리는 중이다."));
+      cs.textContent += " (표본 "+calN+"경기)";
+    }
+  }
   var cn=document.createElement("div"); cn.className="axnote"; cn.style.marginTop="6px";
   cn.textContent="왼쪽이 모델이 말한 구간, 오른쪽이 실제 홈 승률. 두 값이 가까울수록 정직한 모델입니다.";
   cal.appendChild(cn);
@@ -6743,6 +7198,7 @@ document.getElementById("bNextDay").addEventListener("click", function(){
 });
 document.getElementById("subPred").addEventListener("click", function(){ showRank("pred"); });
 document.getElementById("subNow").addEventListener("click", function(){ showRank("now"); });
+document.getElementById("subPS").addEventListener("click", function(){ showRank("ps"); });
 document.getElementById("tabRank").addEventListener("click", function(){ showTab("Rank"); });
 document.getElementById("tabSim").addEventListener("click", function(){ showTab("Sim"); });
 document.getElementById("tabNews").addEventListener("click", function(){ showTab("News"); });

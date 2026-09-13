@@ -245,8 +245,9 @@ footer p{margin:0 0 6px}
 .gside .nm{display:inline-block; font-size:13px; font-weight:600; padding:3px 9px; border-radius:4px; min-width:74px; text-align:center}
 .gside .sc{margin-left:auto; font-size:18px; font-weight:600; font-variant-numeric:tabular-nums}
 .gside .wp{margin-left:auto; font-size:12.5px; color:var(--ink2); font-variant-numeric:tabular-nums}
-.gbar{height:4px; border-radius:2px; overflow:hidden; display:flex; margin-top:8px}
+.gbar{height:7px; border-radius:4px; overflow:hidden; display:flex; margin-top:9px}
 .gbar i{display:block; height:100%}
+.gbar i+i{box-shadow:-1px 0 0 var(--bg)}
 .gd{border:1px solid var(--line2); border-radius:6px; padding:13px; margin-top:10px; background:var(--panel)}
 .gd h3{margin:0 0 8px; font-size:13px; font-weight:600}
 .gwp{display:flex; align-items:baseline; gap:10px; margin-bottom:10px}
@@ -632,7 +633,6 @@ html{scroll-behavior:smooth}
       <div id="labLearn"></div>
       <div class="row" style="margin-top:12px">
         <button class="btn" id="bLabApply">배운 값 적용</button>
-        <button class="btn" id="bLabClear">기록 지우기</button>
         <span class="msg" id="labMsg"></span>
       </div>
       <div class="shd" style="margin-top:18px"><h2>최근 채점</h2></div>
@@ -643,7 +643,7 @@ html{scroll-behavior:smooth}
   <div class="pane" id="paneNews">
   <section>
     <div class="shd"><h2>최신 소식</h2><span class="note" id="newsMsg"></span></div>
-    <p class="hint">여러 매체에서 KBO 기사 제목을 모아옵니다. 선수 이름과 상황이 잡힌 기사는 오른쪽 반영 버튼 한 번으로 로스터에 적용되고, 나머지는 헤드라인으로 쭉 보여줍니다.</p>
+    <p class="hint">여러 매체에서 KBO 기사 제목을 모아옵니다. 선수 이름과 상황이 잡힌 기사는 위쪽에 따로 모아 보여줍니다. 로스터는 업데이트할 때 KBO스탯 기준으로 자동으로 맞춰지니 따로 반영할 필요가 없습니다.</p>
     <div class="row"><button class="btn pri" id="bFeed">뉴스 불러오기</button></div>
     <div class="chips" id="newsChips" style="margin-top:10px"></div>
     <div id="feed"></div>
@@ -739,10 +739,6 @@ LG 박동원, FA 계약으로 KIA 이적"></textarea>
     <p>기본 전력은 직전 5시즌 승률을 최근 쪽에 0.55씩 더 무겁게 준 가중 평균(1 / 0.55 / 0.30 / 0.17 / 0.09)으로 묶은 뒤, 리그 평균 쪽으로 0.60 회귀시켜 만듭니다. 2016~2026 기록으로 2021~2026 여섯 시즌을 실제로 맞혀보고 고른 값입니다. 평균 순위오차 2.37로, 전년 성적만 쓰는 방식(2.60)이나 최근 2년 평균(2.47)보다 나았고 구간을 바꿔가며 확인해도 순위가 뒤집히지 않았습니다.</p>
     <p>여기에 2026 선수 기록으로 계산한 로스터 전력을 40% 얹고, 이탈로 표시한 선수의 기여 승수를 75%만큼 뺍니다. 능력치 오각형은 규정 이닝·타석을 넘긴 리그 전체 선수 분포에서의 백분위라 투수는 투수끼리, 타자는 타자끼리 같은 기준으로 비교됩니다.</p>
     <p>선수 기록은 MyKBO Stats 2026년 9월 10일 기준, 과거 순위는 위키피디아 KBO 시즌 문서입니다. 한글 이름은 영문 표기에서 옮긴 것이라 일부 다를 수 있습니다.</p>
-    <div class="resetWrap">
-      <button class="btn tiny" id="bReset">전체 초기화</button>
-      <span class="note">쌓아 온 기록·조정 내용을 모두 지우고 처음 상태로 돌립니다</span>
-    </div>
     <p class="by">제안, 문의 <a href="mailto:jaehokwak11@gmail.com">jaehokwak11@gmail.com</a></p>
   </footer>
 </div>
@@ -827,6 +823,36 @@ function anim(el, cls){
   el.classList.remove(cls);
   void el.offsetWidth;          /* 애니메이션을 처음부터 다시 */
   el.classList.add(cls);
+}
+/* DOM을 갈아끼우면 위쪽 높이가 변해 보던 자리가 밀린다.
+   기준 요소의 화면상 위치를 재고, 바뀐 만큼 스크롤을 되돌려 제자리에 붙여 둔다. */
+/* 지금 화면 맨 위에 보이는 요소를 기준으로 잡는다.
+   분석을 읽는 중이면 그 문단이, 위쪽을 보고 있으면 위쪽이 그대로 붙어 있게 된다. */
+function keepScrollAuto(container, fn){
+  var anchor=null;
+  if(container && container.children){
+    for(var i=0;i<container.children.length;i++){
+      var r=container.children[i].getBoundingClientRect();
+      if(r.bottom>0){ anchor=container.children[i]; break; }
+    }
+  }
+  keepScroll(anchor, fn);
+}
+function keepScroll(anchor, fn){
+  if(!anchor || !anchor.getBoundingClientRect){ fn(); return; }
+  var before=anchor.getBoundingClientRect().top;
+  fn();
+  if(!anchor.isConnected) return;
+  var d=anchor.getBoundingClientRect().top - before;
+  if(Math.abs(d)>1) window.scrollBy(0, d);
+}
+/* 이미 다 보이면 굳이 스크롤하지 않는다. 안 보일 때만 최소한으로 움직인다. */
+function revealIfNeeded(el){
+  if(!el || !el.getBoundingClientRect) return;
+  var r=el.getBoundingClientRect();
+  var h=window.innerHeight || document.documentElement.clientHeight;
+  if(r.top>=0 && r.bottom<=h) return;
+  el.scrollIntoView({behavior:"smooth", block: r.height>h*0.9 ? "start" : "nearest"});
 }
 /* 막대를 0에서 목표치까지 늘린다 */
 function grow(el, pct, delay){
@@ -994,7 +1020,7 @@ function axesOf(p){
 
 /* ---------- 상태 ---------- */
 var CID = Math.random().toString(36).slice(2,10);
-var state = { out:{}, moves:{}, stats:{}, roles:{}, ord:{}, boost:{}, mgr:{}, teamRec:{}, custom:[], myTeam:"", news:[], feed:[], feedTeam:{}, recent:{}, hist:{}, pos:{}, posN:{}, posSeen:{}, ppath:{}, luLast:{}, spicy:false, pred:{}, grade:[], tune:{}, stamp:"", statStamp:"", updatedAt:0 };
+var state = { out:{}, moves:{}, stats:{}, roles:{}, ord:{}, boost:{}, mgr:{}, teamRec:{}, custom:[], myTeam:"", news:[], feed:[], feedTeam:{}, recent:{}, hist:{}, pos:{}, posN:{}, posSeen:{}, armN:{}, ppath:{}, sched:[], lu:{}, luLast:{}, spicy:false, pred:{}, grade:[], tune:{}, stamp:"", statStamp:"", updatedAt:0 };
 var sel=null, selP=null, last=null, sims=6000;
 var dbNs=null, sampleNs=null;
 var HOSTED = !!(window.claude && typeof window.claude.use === "function");
@@ -1025,6 +1051,17 @@ function adopt(o){
   state.luLast = o.luLast || {};
   state.posN = o.posN || {};
   state.posSeen = o.posSeen || {};
+  state.armN = o.armN || {};
+  /* 일정과 라인업도 되살린다. 껐다 켤 때마다 다시 불러오지 않아도 되게.
+     그리는 건 전력 계산이 끝난 뒤에 해야 해서 여기서는 담아만 둔다. */
+  if(o.sched && o.sched.length && !schedule.length){
+    schedule = o.sched;
+    if(o.lu){
+      Object.keys(o.lu).forEach(function(id){
+        if(!lineups[id]){ lineups[id]=o.lu[id]; lineupState[id]="done"; }
+      });
+    }
+  }
   state.spicy = !!o.spicy;
   state.pred = o.pred || {};
   state.grade = o.grade || [];
@@ -1040,14 +1077,33 @@ function adopt(o){
   applyStats(); rebuildPools();
 }
 function loadLocal(){ try{ adopt(JSON.parse(localStorage.getItem("kbo27b")||"null")); }catch(e){} }
+/* 라인업은 경기 하나당 수십 줄이라 전부 담으면 저장 공간을 금세 채운다.
+   최근 며칠치만 남기고 나머지는 버린다. 필요하면 다시 받으면 된다. */
+function trimLineups(days){
+  var out={};
+  if(!schedule || !schedule.length) return out;
+  var last="";
+  schedule.forEach(function(g){ if(g.ymd>last) last=g.ymd; });
+  var lim=ymdOf(new Date(Date.now() - days*86400000));
+  var keep=[];
+  schedule.forEach(function(g){
+    if(!lineups[g.id] || lineupState[g.id]!=="done") return;
+    if(g.ymd < lim) return;
+    keep.push(g);
+  });
+  keep.sort(function(a,b){ return a.ymd<b.ymd ? 1 : (a.ymd>b.ymd ? -1 : 0); });
+  keep.slice(0, 60).forEach(function(g){ out[g.id]=lineups[g.id]; });
+  return out;
+}
 var saveWarned=false;
 function saveLocal(){
   try{ localStorage.setItem("kbo27b", JSON.stringify({
     out:state.out, moves:state.moves, stats:state.stats, roles:state.roles, ord:state.ord,
     boost:state.boost, mgr:state.mgr, teamRec:state.teamRec, feedTeam:state.feedTeam,
     recent:state.recent, hist:state.hist, pos:state.pos, posN:state.posN,
-    posSeen:state.posSeen, ppath:state.ppath,
+    posSeen:state.posSeen, armN:state.armN, ppath:state.ppath,
     luLast:state.luLast, spicy:state.spicy,
+    sched:schedule, lu:trimLineups(14),
     pred:state.pred, grade:(state.grade||[]).slice(-400), tune:state.tune,
     custom:state.custom, myTeam:state.myTeam, news:state.news, feed:(state.feed||[]).slice(0,60),
     stamp:state.stamp, statStamp:state.statStamp }));
@@ -1066,8 +1122,9 @@ function saveLocal(){
         out:state.out, moves:state.moves, stats:state.stats, roles:state.roles, ord:state.ord,
         boost:state.boost, mgr:state.mgr, teamRec:state.teamRec, feedTeam:state.feedTeam,
         recent:state.recent, hist:state.hist, pos:state.pos, posN:state.posN,
-    posSeen:state.posSeen, ppath:state.ppath,
+    posSeen:state.posSeen, armN:state.armN, ppath:state.ppath,
     luLast:state.luLast, spicy:state.spicy,
+        sched:schedule, lu:trimLineups(4),
         pred:state.pred, grade:state.grade, tune:state.tune,
         custom:state.custom, myTeam:state.myTeam, news:state.news, feed:state.feed,
         stamp:state.stamp, statStamp:state.statStamp }));
@@ -1075,7 +1132,7 @@ function saveLocal(){
       if(!saveWarned){
         saveWarned=true;
         var m=document.getElementById("msg");
-        if(m) m.textContent="저장 공간이 부족해 일부 기록이 저장되지 않았습니다. 맨 아래 전체 초기화를 한 번 해주세요.";
+        if(m) m.textContent="저장 공간이 부족해 오래된 기록부터 정리했습니다. 최근 기록은 그대로 남아 있습니다.";
       }
     }
   }
@@ -1235,6 +1292,25 @@ function teamInk(hex){
     r=mix(r,255,k); g=mix(g,255,k); b=mix(b,255,k);
   } else if(!dark && lum>0.62){
     var k2=Math.min(0.55, (lum-0.62)*1.6+0.18);
+    r=mix(r,0,k2); g=mix(g,0,k2); b=mix(b,0,k2);
+  }
+  return "rgb("+r+","+g+","+b+")";
+}
+
+/* 막대·면을 칠할 때 쓰는 색.
+   teamInk 는 글자 대비용이라 어두운 팀 색을 흰색 쪽으로 최대 72%까지 섞는다.
+   그걸로 면을 칠하면 KT 진회색이 연회색, 키움 진홍이 연분홍이 되어 팀이 구분되지 않는다.
+   여기서는 팀 원색을 그대로 쓰고, 배경에 아예 묻히는 아주 어두운/밝은 색만 살짝 민다. */
+function teamFill(hex){
+  var r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+  var lum=(0.299*r+0.587*g+0.114*b)/255;
+  var mix=function(c, w, k){ return Math.round(c+(w-c)*k); };
+  var dark=isDarkMode();
+  if(dark && lum<0.18){
+    var k=Math.min(0.28, (0.18-lum)*1.4+0.12);
+    r=mix(r,255,k); g=mix(g,255,k); b=mix(b,255,k);
+  } else if(!dark && lum>0.86){
+    var k2=Math.min(0.22, (lum-0.86)*1.4+0.10);
     r=mix(r,0,k2); g=mix(g,0,k2); b=mix(b,0,k2);
   }
   return "rgb("+r+","+g+","+b+")";
@@ -2714,6 +2790,7 @@ function plain(html){
              .replace(/\s+/g," ");
 }
 function frac(tok){
+  tok=String(tok||"").replace(/\s+/g,"");     /* "0 ⅓" 처럼 띄어쓰기가 들어온다 */
   var m=tok.match(/^(\d+(?:\.\d+)?)([⅓⅔])?$/);
   if(!m) return parseFloat(tok);
   var v=parseFloat(m[1]);
@@ -2784,7 +2861,7 @@ function refreshFree(btn){
   var TOTAL = TEAMS.length + 1 + weeks.length + NEWS_Q.length;
   var done=0, t0=Date.now();
   var all=[], fails=0, schedGot=[], recN=0, newsN=0, standOk=false;
-  var rosterSeen={}, syncRes=null, addedN=0, koN=0, gradeN=0, predN=0, luN=0, teamNewsN=0;
+  var rosterSeen={}, syncRes=null, addedN=0, koN=0, gradeN=0, predN=0, luN=0, teamNewsN=0, backN=0;
   roleChg=[]; goneList=[];
 
   function tick(label){
@@ -2938,7 +3015,9 @@ function refreshFree(btn){
     schedule.forEach(function(gx){
       if(gx.status!=="예정") return;
       if(gx.aScore!==null && gx.aScore!==undefined) return;
-      if(state.pred && state.pred[gx.id]) return;
+      /* 이미 저장돼 있어도 다시 덮어쓴다. 선발 예고가 늦게 나오는 경우가 많아
+         처음 저장한 값이 선발 없이 계산된 값으로 굳어 버리기 때문이다.
+         경기가 시작되면 savePred 가 알아서 더 이상 안 건드린다. */
       var lu=lineups[gx.id], sA0=null, sH0=null;
       if(lu){
         if(lu[gx.away] && lu[gx.away].pit.length)
@@ -2950,6 +3029,7 @@ function refreshFree(btn){
       predN++;
     });
     gradeN=gradePreds();
+    backN=backfillGrades();          /* 끝난 경기는 사후로도 채점해 표본을 늘린다 */
     if(roleChg.length) rebuildPools();
     /* 뭐라도 받아왔으면 기준일을 오늘로 올린다.
        예전에는 "바뀐 기록 적용" 버튼을 눌러야만 찍혀서, 변화가 없는 날엔 날짜가 멈춰 있었다. */
@@ -2984,6 +3064,7 @@ function refreshFree(btn){
     if(luN) bits.push("라인업 "+luN+"경기");
     if(predN) bits.push("예측 저장 "+predN+"경기");
     if(gradeN) bits.push("예측 채점 "+gradeN+"경기");
+    if(backN) bits.push("지난 경기 학습 "+backN+"경기");
     if(newsN) bits.push("뉴스 "+newsN+"건");
     if(teamNewsN) bits.push("팀별 "+teamNewsN+"건");
     if(fails) bits.push(fails+"개 팀 실패");
@@ -3263,27 +3344,6 @@ document.getElementById("bSpicy").addEventListener("click", function(){
 document.getElementById("bNews").addEventListener("click", function(){
   document.getElementById("newsSec").scrollIntoView({behavior:"smooth", block:"start"});
   refreshFree(this);
-});
-var resetArmed=false;
-document.getElementById("bReset").addEventListener("click", function(){
-  var msg=document.getElementById("msg");
-  if(!resetArmed){
-    resetArmed=true; this.textContent="정말 초기화?";
-    var self=this;
-    setTimeout(function(){ resetArmed=false; self.textContent="초기화"; }, 4000);
-    return;
-  }
-  resetArmed=false; this.textContent="초기화";
-  state.out={}; state.moves={}; state.stats={}; state.roles={}; state.ord={}; state.boost={}; state.mgr={};
-  state.news=[]; state.stamp=""; state.statStamp="";
-  state.hist={}; state.recent={}; state.teamRec={}; state.feed=[]; state.feedTeam={};
-  state.pred={}; state.grade=[]; state.tune={}; state.pos={};
-  state.custom=(state.custom||[]).filter(function(c){ return !c.auto; });  /* 자동 추가분만 정리 */
-  mountCustom(); grpOpen={};
-  applyStats(); rebuildPools();
-  touch(); renderLog(); run();
-  renderCustom(); renderGames(); renderNow(); renderFeed();
-  msg.textContent="모두 지우고 처음 상태로 돌렸습니다. My team과 직접 추가한 선수는 남겨 뒀습니다.";
 });
 document.getElementById("bApply").addEventListener("click", function(){
   var text=document.getElementById("newsIn").value.trim();
@@ -4028,7 +4088,7 @@ function renderFeed(){
     h.textContent=t+(n?" "+n+"건":"");
     return h;
   }
-  if(hits.length) box.appendChild(head("로스터에 반영할 소식", hits.length));
+  if(hits.length) box.appendChild(head(SP("선수 이동·부상 소식", "선수 관련 소식"), hits.length));
   hits.forEach(function(o){ box.appendChild(newsItem(o.x, o.ch)); });
   if(rest.length) box.appendChild(head("헤드라인", rest.length));
   rest.slice(0,60).forEach(function(o){ box.appendChild(newsItem(o.x, [])); });
@@ -4051,14 +4111,6 @@ function newsItem(x, ch){
     g.textContent=c.player+" "+actionLabel(c);
     m.appendChild(g);
   });
-  if(ch.length){
-    var b=document.createElement("button"); b.className="mini"; b.textContent="반영";
-    b.addEventListener("click", function(){
-      applyChanges(ch, x.title);
-      b.textContent="반영됨"; b.disabled=true;
-    });
-    m.appendChild(b);
-  }
   it.appendChild(t); it.appendChild(m);
   return it;
 }
@@ -4470,9 +4522,61 @@ function penEra(key){
   });
 }
 /* 오늘 상대가 받아낼 9이닝 실점 */
-function oppRA9(key, starter){
+/* 그 투수가 최근에 얼마나 던졌나. 어제 던진 공이 제일 무겁다. */
+function armLoad(name, ymd){
+  var t=state.armN && state.armN[name];
+  if(!t || !ymd) return 0;
+  var base=new Date(ymd);
+  var back=function(k){ return ymdOf(new Date(base.getTime()-k*86400000)); };
+  return (t[back(1)]||0)*1.0 + (t[back(2)]||0)*0.5;
+}
+/* 오늘 나올 수 있는 정도. 어제 많이 던졌으면 오늘은 못 나온다. */
+function armWeight(name, ymd){
+  var L=armLoad(name, ymd);
+  if(L>=32) return 0.12;      /* 어제 30개 넘게 던졌으면 오늘은 거의 못 나온다 */
+  if(L>=22) return 0.45;
+  if(L>=14) return 0.80;
+  return 1;
+}
+/* 감독은 좋은 불펜부터 쓴다. 그래서 앞선 투수가 못 나오면 그 이닝이
+   명단 아래쪽 더 나쁜 투수에게 넘어간다. 단순히 피로한 투수를 빼고 평균을 내면
+   나쁜 투수가 빠졌을 때 오히려 불펜이 좋아져 버려서, 이렇게 이닝을 메워 가며 계산한다. */
+function penEraAvail(key, ymd){
+  var rp=rosterOf(key).filter(function(p){ return p.t==="P" && !isSP(p); })
+    .sort(function(a,b){ return regEra(a)-regEra(b); });      /* 좋은 투수부터 */
+  if(rp.length<3) return null;
+  var need=9-SP_IP, used=0, acc=0;
+  for(var i=0;i<rp.length && used<need-0.01;i++){
+    var cap=1.05 * (ymd ? armWeight(rp[i].n, ymd) : 1);       /* 하루에 던질 수 있는 이닝 */
+    if(cap<=0.02) continue;
+    var take=Math.min(cap, need-used);
+    acc += regEra(rp[i])*take; used += take;
+  }
+  if(used < need-0.01){                                       /* 메울 사람이 없으면 최악 */
+    acc += LG_ERA*1.20*(need-used); used=need;
+  }
+  return acc/used;
+}
+/* 오늘 쓸 수 있는 불펜과, 전부 쉬었을 때의 불펜을 같은 방식으로 재서 그 차이를 쓴다. */
+function penTired(key, ymd){
+  if(!ymd || !state.armN) return 0;
+  return memo("tired:"+key+":"+ymd, function(){
+    var now=penEraAvail(key, ymd), full=penEraAvail(key, null);
+    if(now===null || full===null) return 0;
+    return clamp(now-full, 0, 0.70);
+  });
+}
+/* 불펜이 지쳐 있으면 상대 득점이 그만큼 는다. 기대 득점에 곱할 배율로 낸다. */
+function penAdj(key, ymd){
+  var d=penTired(key, ymd);
+  if(!d) return 1;
+  var add=d*(9-SP_IP)/9*ER_TO_R;          /* 9이닝으로 환산한 추가 실점 */
+  return clamp(1 + add/LG_RUNS, 1, 1.16);
+}
+function oppRA9(key, starter, ymd){
   var sp = starter ? regEra(starter) : rotEra(key);
-  return (sp*SP_IP + penEra(key)*(9-SP_IP))/9 * ER_TO_R;
+  var pen = penEra(key) + penTired(key, ymd);
+  return (sp*SP_IP + pen*(9-SP_IP))/9 * ER_TO_R;
 }
 /* 오늘 라인업의 타격 수준. 라인업이 없으면 타석 많은 9명으로 대신한다. */
 function lineupOps(key, gid){
@@ -4606,10 +4710,11 @@ function gameModel(g, sAway, sHome){
   var daH=defAdj(g.home, sHome), daA=defAdj(g.away, sAway);
   var fA=formFactor(g.away), fH=formFactor(g.home);
   var pf=parkFac(g);                         /* 구장은 양 팀에 똑같이 걸린다 */
-  var eA=clamp(eA0*oaA*daH*fA*pf, 2.0, 9.5);
-  var eH=clamp(eH0*oaH*daA*fH*pf, 2.0, 9.5);
+  var paH=penAdj(g.home, g.ymd), paA=penAdj(g.away, g.ymd);
+  var eA=clamp(eA0*oaA*daH*paH*fA*pf, 2.0, 9.5);
+  var eH=clamp(eH0*oaH*daA*paA*fH*pf, 2.0, 9.5);
   var oA=lineupOps(g.away, g.id), oH=lineupOps(g.home, g.id);
-  var dA=oppRA9(g.away, sAway), dH=oppRA9(g.home, sHome);
+  var dA=oppRA9(g.away, sAway, g.ymd), dH=oppRA9(g.home, sHome, g.ymd);
   var rA=spRuns(g.away, sAway), rH=spRuns(g.home, sHome);
 
   var p=clamp(Math.pow(eH,PYTH)/(Math.pow(eH,PYTH)+Math.pow(eA,PYTH)), 0.22, 0.78);
@@ -4677,6 +4782,11 @@ function simGame(g, sAway, sHome, n){
             mA:sumA/n, mH:sumH/n, one:one/n };
   for(var k in M) if(Object.prototype.hasOwnProperty.call(M,k)) out[k]=M[k];
   out.eA=eA; out.eH=eH;
+  /* M.p 는 피타고라스로 푼 값이고, away/home 은 실제로 12,000번 돌린 값이다.
+     연장·무승부까지 태우면 둘이 몇 %p 어긋나고, 심하면 우세 팀이 뒤집힌다.
+     화면에는 시뮬레이션 값이 나가므로 채점도 그 값으로 해야 앞뒤가 맞는다.
+     무승부는 판정에서 빼므로 무승부를 제외한 홈 승률로 만든다. */
+  out.pShown = (aw+hw) ? hw/(aw+hw) : M.p;
   return out;
 }
 
@@ -4828,10 +4938,22 @@ function keyPlayerOfDay(g, key, pk, st, ctx){
 }
 
 /* 어느 화면에서든 선수 카드를 띄운다 */
-function openPlayerCard(p){
+/* #pcard 는 원래 경기 분석 전체 아래에 있어서, 위쪽 키플레이어를 누르면
+   분석을 통째로 건너뛰고 화면이 맨 아래로 내려가 버렸다.
+   누른 자리 바로 밑으로 카드를 옮겨 띄우고, 화면을 다시 그리기 전에 제자리로 돌려놓는다. */
+function homePcard(){
+  var box=document.getElementById("pcard"), gd=document.getElementById("gameDetail");
+  if(!box || !gd || !gd.parentNode) return box;
+  if(box.previousSibling!==gd) gd.parentNode.insertBefore(box, gd.nextSibling);
+  return box;
+}
+function openPlayerCard(p, anchor){
   if(!p) return;
   var box=document.getElementById("pcard");
   box.textContent="";
+  if(anchor && anchor.parentNode)
+    anchor.parentNode.insertBefore(box, anchor.nextSibling);
+  else homePcard();
   var wrap=document.createElement("div"); wrap.className="pcw drop";
   var close=document.createElement("button"); close.className="close"; close.textContent="×";
   close.setAttribute("aria-label","닫기");
@@ -4845,7 +4967,7 @@ function openPlayerCard(p){
   wrap.appendChild(close);
   box.appendChild(wrap);
   box.className="open";
-  wrap.scrollIntoView({behavior:"smooth", block:"center"});
+  revealIfNeeded(wrap);
 }
 
 /* ---- 화면 ---- */
@@ -4872,7 +4994,12 @@ function renderGames(){
   var days=gameDays();
   var box=document.getElementById("gameList");
   var dbox=document.getElementById("gDate");
+  /* 목록을 비우는 찰나 페이지가 짧아지면 브라우저가 스크롤을 맨 위로 끌어올린다.
+     다시 채울 때까지 높이를 붙잡아 둔다. */
+  var keepH=box.offsetHeight;
+  if(keepH) box.style.minHeight=keepH+"px";
   box.textContent=""; dbox.textContent="";
+  setTimeout(function(){ box.style.minHeight=""; }, 0);
   if(!days.length){
     var e=document.createElement("div"); e.className="empty";
     e.textContent="경기 일정이 없습니다. 위 버튼을 눌러 불러오세요.";
@@ -4924,16 +5051,25 @@ function renderGames(){
       }
       card.appendChild(row);
     });
+    card.setAttribute("data-gid", g.id);
     var bar=document.createElement("div"); bar.className="gbar";
-    var i1=document.createElement("i"); i1.style.background=teamInk(A.color);
-    var i2=document.createElement("i"); i2.style.background=teamInk(H.color);
+    var i1=document.createElement("i"); i1.style.background=teamFill(A.color);
+    var i2=document.createElement("i"); i2.style.background=teamFill(H.color);
     bar.appendChild(i1); bar.appendChild(i2);
     card.appendChild(bar);
     grow(i1, r.away*100, 90+gi*70);
     grow(i2, r.home*100, 90+gi*70);
     card.addEventListener("click", function(){
-      gSel = (gSel===g.id) ? null : g.id;
+      var key=g.id;
+      /* 상세가 열리고 닫히며 위쪽 높이가 확 바뀌어 화면이 튀던 문제 */
+      var before=card.getBoundingClientRect().top;
+      gSel = (gSel===key) ? null : key;
       renderGames(); renderGameDetail(gSel ? g : null);
+      var again=document.querySelector('#gameList [data-gid="'+key+'"]');
+      if(again){
+        var d=again.getBoundingClientRect().top - before;
+        if(Math.abs(d)>1) window.scrollBy(0, d);
+      }
     });
     box.appendChild(card);
   });
@@ -5026,9 +5162,33 @@ function slugInfo(slug){
   }
   return { key:key, roman:toks.slice(0, cut).join(" ") };
 }
+/* 박스스코어 타순표는 한 칸에 선발과 교체 선수를 세로로 쌓는다.
+   행의 첫 칸에 있는 타순 번호는 선발에만 붙고 교체 행은 비어 있다.
+   그 번호를 읽어 선발 9명과 교체를 가른다. HTML·마크다운 둘 다 본다. */
+function readOrder(src, at){
+  /* HTML은 <tr 부터가 한 행, 마크다운은 줄바꿈부터가 한 행이다.
+     HTML에서 줄바꿈을 기준으로 잡으면 행 안쪽에서 시작해 첫 칸을 놓친다. */
+  var cands=[];
+  var t=src.lastIndexOf("<tr", at); if(t>=0 && at-t<=1500) cands.push(t);
+  var n=src.lastIndexOf("\n", at); if(n>=0 && at-n<=500) cands.push(n);
+  for(var c=0;c<cands.length;c++){
+    var head=src.slice(cands[c], at), cell=null;
+    var m=head.match(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/i);
+    if(m) cell=m[1];
+    else {
+      var mm=head.match(/^[^|<]*\|([^|]*)\|/);
+      if(mm) cell=mm[1];
+    }
+    if(cell===null) continue;
+    cell=cell.replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").trim();
+    if(/^[1-9]$/.test(cell)) return parseInt(cell,10);
+    return null;               /* 첫 칸을 읽었는데 번호가 아니면 교체 선수 */
+  }
+  return null;
+}
 function parseLineup(src, away, home){
   src=String(src||"");
-  var res={}; res[away]={bat:[],pit:[]}; res[home]={bat:[],pit:[]};
+  var res={}; res[away]={bat:[],pit:[],subs:[]}; res[home]={bat:[],pit:[],subs:[]};
   /* 팀 이름이 본문 어디에 나오는지 미리 찍어 둔다 (주소에 팀이 없는 링크용) */
   var marks=[];
   /* 주소 안에 팀 이름이 들어 있다(/players/3100-Bruce-Zimmerman-Hanwha-Eagles).
@@ -5086,8 +5246,23 @@ function parseLineup(src, away, home){
     var side=res[k];
 
     if(BPOS.test(first)){
-      if(!side.bat.some(function(x){ return x.n===nm; }))
-        side.bat.push({n:nm, alt:alt, no:no, pos:first, pid:m[1]});
+      var seen2=side.bat.concat(side.subs).some(function(x){ return x.n===nm; });
+      if(!seen2){
+        var ordN=readOrder(src, at);
+        var rowB={n:nm, alt:alt, no:no, pos:first, pid:m[1], order:ordN};
+        /* 끝난 경기면 포지션 뒤로 그날 성적이 붙는다: 타율 타수 득점 안타 홈런 타점 … */
+        var num=function(i){
+          var v=toks[i]; if(v===undefined) return null;
+          if(!/^\.?\d+(\.\d+)?$/.test(v)) return null;
+          return parseFloat(v);
+        };
+        var ab=num(2), hh=num(4);
+        if(ab!==null && hh!==null && ab<=12 && hh<=ab){
+          rowB.box={ ab:ab, r:num(3)||0, h:hh, hr:num(5)||0, rbi:num(6)||0 };
+        }
+        if(ordN===null){ rowB.sub=true; side.subs.push(rowB); }
+        else side.bat.push(rowB);
+      }
       continue;
     }
     var era=readEra(tail), ipg=null;
@@ -5100,6 +5275,13 @@ function parseLineup(src, away, home){
     if(im) ipg=parseFloat(im[1]);
     var isPit = /^\d+\.\d{1,2}$/.test(first) || /^\d+\s*-\s*\d+/.test(first) || era!==null;
     var rec={n:nm, alt:alt, no:no, era:era, ipg:ipg, pid:m[1]};
+    /* 박스스코어 투수 줄은 [그 경기 방어율, 이닝, 투구수] 순서다.
+       투구수는 불펜 피로도 계산에 쓴다. */
+    if(toks.length>=3){
+      var ipT=frac(String(toks[1]||"")), npT=parseFloat(toks[2]);
+      if(isFinite(ipT) && ipT>=0 && ipT<=15) rec.ipGame=ipT;
+      if(isFinite(npT) && npT>=1 && npT<=160) rec.np=npT;
+    }
     if(isPit){
       if(!side.pit.some(function(x){ return x.n===nm; })) side.pit.push(rec);
     } else if(!loose[k]) loose[k]=rec;      /* 분류가 안 된 링크는 따로 챙겨 둔다 */
@@ -5107,7 +5289,17 @@ function parseLineup(src, away, home){
   /* MyKBO 경기 페이지는 경기 전에 타순을 올리지 않는다. 선발 두 명만 링크가 걸린다.
      성적 꼬리를 못 읽어도 그 팀의 유일한 선수 링크면 선발로 세운다. */
   [away,home].forEach(function(k){
-    if(!res[k].pit.length && !res[k].bat.length && loose[k]) res[k].pit.push(loose[k]);
+    if(!res[k].pit.length && !res[k].bat.length && !res[k].subs.length && loose[k])
+      res[k].pit.push(loose[k]);
+    /* 타순 번호를 한 줄도 못 읽는 형식이면 예전처럼 앞 9줄을 선발로 본다 */
+    if(!res[k].bat.length && res[k].subs.length){
+      res[k].bat = res[k].subs.slice(0,9).map(function(x, i){
+        var y={}; for(var q in x) y[q]=x[q];
+        y.order=i+1; delete y.sub; return y;
+      });
+      res[k].subs = res[k].subs.slice(9);
+    }
+    res[k].bat.sort(function(a2,b2){ return (a2.order||99)-(b2.order||99); });
   });
   var any=res[away].bat.length+res[away].pit.length+res[home].bat.length+res[home].pit.length;
   return any ? res : null;
@@ -5152,13 +5344,41 @@ function absorbLineup(g, lu){
     var counted=0;
     [g.away, g.home].forEach(function(k){
       if(!lu[k]) return;
-      lu[k].bat.forEach(function(bx){
+      /* 교체로 들어가 수비를 본 자리도 실제 출장이니 같이 센다 */
+      lu[k].bat.concat(lu[k].subs||[]).forEach(function(bx){
         if(bx.old || !bx.pos) return;          /* 지난 경기에서 복사해 온 줄은 빼고 */
         var q=matchLineup(k, bx);
         if(q && q.t!=="P"){ tallyPos(q.n, bx.pos); counted++; }
       });
     });
     if(counted){ state.posSeen[g.id]=1; bumpModel(); }
+  }
+  /* 불펜 피로도 — 누가 언제 몇 개 던졌는지 쌓는다.
+     어제 많이 던진 불펜은 오늘 못 나오고, 그만큼 그 팀 불펜이 약해진다. */
+  if(g.ymd){
+    state.armN = state.armN || {};
+    var got=0;
+    [g.away, g.home].forEach(function(k){
+      if(!lu[k]) return;
+      lu[k].pit.forEach(function(px){
+        if(!px.np) return;
+        var q2=matchLineup(k, px), nm2 = q2 ? q2.n : px.n;
+        var t2=state.armN[nm2] || (state.armN[nm2]={});
+        t2[g.ymd]=Math.max(t2[g.ymd]||0, px.np);
+        got++;
+      });
+    });
+    if(got){
+      /* 오래된 날짜는 버린다. 피로는 이틀이면 거의 풀린다. */
+      var keep={}, dd=new Date(g.ymd);
+      for(var z=0;z<7;z++) keep[ymdOf(new Date(dd.getTime()-z*86400000))]=1;
+      Object.keys(state.armN).forEach(function(nm3){
+        var t3=state.armN[nm3];
+        Object.keys(t3).forEach(function(d3){ if(!keep[d3] && d3<g.ymd) delete t3[d3]; });
+        if(!Object.keys(t3).length) delete state.armN[nm3];
+      });
+      bumpModel();
+    }
   }
   /* 오늘 경기에 타순이 없으면 직전 경기 타순으로 채운다 */
   [g.away, g.home].forEach(function(k){
@@ -5221,8 +5441,13 @@ function keyBatters(key, lu, n){
 
 function renderGameDetail(g){
   var box=document.getElementById("gameDetail");
+  var pc0=homePcard();                 /* 카드가 안쪽에 있으면 먼저 빼낸다 */
+  if(pc0){ pc0.textContent=""; pc0.className=""; }
+  var keepH=box.offsetHeight;
+  box.style.minHeight = keepH ? keepH+"px" : "";
   box.textContent="";
-  if(!g) return;
+  if(!g){ box.style.minHeight=""; return; }
+  setTimeout(function(){ box.style.minHeight=""; }, 0);
   var A=teamOf(g.away), H=teamOf(g.home);
   var sA=null, sH=null, selA=null, selH=null, autoDone=false;
   var wrap=document.createElement("div"); wrap.className="gd drop";
@@ -5400,7 +5625,7 @@ function renderGameDetail(g){
       rb.textContent="다시 시도"; rb.style.marginTop="6px";
       rb.addEventListener("click", function(){
         lineupState[g.id]=null; delete lineupWhy[g.id];
-        loadLineup(g, function(){ drawLineups(); });
+        loadLineup(g, function(){ keepScrollAuto(wrap, drawLineups); });
       });
       luBox.appendChild(rb);
       return;
@@ -5432,7 +5657,7 @@ function renderGameDetail(g){
                                      : " (명단 밖 — 업데이트하면 기록이 붙습니다)"));
         if(mine){
           pr.className="lup hit2";
-          pr.addEventListener("click", function(){ openPlayerCard(mine); });
+          pr.addEventListener("click", function(){ openPlayerCard(mine, luBox); });
         }
         col.appendChild(pr);
       }
@@ -5449,7 +5674,7 @@ function renderGameDetail(g){
         r.appendChild(n1); r.appendChild(n2); r.appendChild(n3);
         if(mine){
           r.className="lur hit2";
-          r.addEventListener("click", function(){ openPlayerCard(mine); });
+          r.addEventListener("click", function(){ openPlayerCard(mine, luBox); });
         }
         col.appendChild(r);
       });
@@ -5536,11 +5761,11 @@ function renderGameDetail(g){
       var e1=document.createElement("div"); e1.className="v"; e1.textContent=a.toFixed(0);
       e1.style.color=teamInk(A.color);
       var b1=document.createElement("div"); b1.className="barL";
-      var i1=document.createElement("i"); i1.style.background=teamInk(A.color);
+      var i1=document.createElement("i"); i1.style.background=teamFill(A.color);
       b1.appendChild(i1);
       var lb=document.createElement("div"); lb.className="lab"; lb.textContent=row[0];
       var b2=document.createElement("div"); b2.className="barR";
-      var i2=document.createElement("i"); i2.style.background=teamInk(H.color);
+      var i2=document.createElement("i"); i2.style.background=teamFill(H.color);
       b2.appendChild(i2);
       var e2=document.createElement("div"); e2.className="v"; e2.textContent=h.toFixed(0);
       e2.style.color=teamInk(H.color);
@@ -5556,16 +5781,16 @@ function renderGameDetail(g){
   paint();
   box.appendChild(wrap);
   if(lineupState[g.id]==="done" || lineupState[g.id]==="fail") drawLineups();
-  else loadLineup(g, function(){ drawLineups(); });
+  else loadLineup(g, function(){ keepScrollAuto(wrap, drawLineups); });
 
   /* ---- 분석 ---- */
   /* 승률 게이지 */
   function drawGauge(box2, r){
     var d=document.createElement("div"); d.className="gauge";
     var bar=document.createElement("div"); bar.className="gg";
-    var ia=document.createElement("i"); ia.style.background=teamInk(A.color);
+    var ia=document.createElement("i"); ia.style.background=teamFill(A.color);
     var it=document.createElement("i"); it.className="tie"; 
-    var ih=document.createElement("i"); ih.style.background=teamInk(H.color);
+    var ih=document.createElement("i"); ih.style.background=teamFill(H.color);
     bar.appendChild(ia); bar.appendChild(it); bar.appendChild(ih);
     var lab=document.createElement("div"); lab.className="ggl";
     var la=document.createElement("span"); la.style.color=teamInk(A.color);
@@ -5718,7 +5943,7 @@ function renderGameDetail(g){
       card.appendChild(tag); card.appendChild(nm); card.appendChild(sub); card.appendChild(li);
       card.style.cursor="pointer";
       card.title=kp.p.n+" 정보 보기";
-      card.addEventListener("click", function(){ openPlayerCard(kp.p); });
+      card.addEventListener("click", function(){ openPlayerCard(kp.p, kpBox); });
       kpBox.appendChild(card);
     });
   }
@@ -5752,6 +5977,50 @@ function renderGameDetail(g){
       if(!live0){
         say(sv, ["예측 득점 ", {b:r.eA.toFixed(1)+" · "+r.eH.toFixed(1)}, " 대 실제 ",
           {b:g.aScore+" · "+g.hScore}, ". 더 자세한 채점은 아래 세부 분석에 있다."]);
+      }
+    }
+
+    /* 끝난 경기는 선수별로 누가 해냈고 누가 안 됐는지 한 줄씩 붙인다.
+       박스스코어에서 읽은 그 경기 타수·안타·홈런·타점을 쓴다. */
+    var luB=lineups[g.id];
+    if(g.status==="종료" && luB){
+      var stars=[];
+      [[A, g.away],[H, g.home]].forEach(function(T){
+        var side=luB[T[1]]; if(!side) return;
+        side.bat.concat(side.subs||[]).forEach(function(bx){
+          if(!bx.box || !bx.box.ab) return;
+          var q=matchLineup(T[1], bx);
+          var sc = bx.box.h*1 + bx.box.hr*1.6 + bx.box.rbi*0.9 + bx.box.r*0.4
+                 - (bx.box.ab - bx.box.h)*0.32;
+          stars.push({ t:T[0], n: q?q.n:(bx.n||bx.alt), b:bx.box, sc:sc, pos:bx.pos });
+        });
+      });
+      if(stars.length>=6){
+        stars.sort(function(x,y){ return y.sc-x.sc; });
+        var line=function(x){
+          var b2=x.b, bits=[];
+          if(b2.hr) bits.push(b2.hr+"홈런");
+          bits.push(b2.ab+"타수 "+b2.h+"안타");
+          if(b2.rbi) bits.push(b2.rbi+"타점");
+          if(b2.r && !b2.rbi) bits.push(b2.r+"득점");
+          return bits.join(" · ");
+        };
+        var sE=sblock(SP("오늘 이 선수가 해냈다", "오늘의 주범과 은인"));
+        var best=stars.slice(0,3), worst=stars.slice(-2).reverse();
+        best.forEach(function(x, i){
+          var head = i===0 ? SP("수훈 ", "오늘 경기 가져간 사람 ") : "";
+          var tailTxt = x.b.hr>=1
+            ? SP(" 담장을 넘겼다.", " 담장 밖으로 보내버렸다.")
+            : (x.b.h>=3 ? SP(" 방망이가 쉬지 않았다.", " 오늘 공이 다 크게 보였나 보다.")
+                        : SP(" 제 몫을 했다.", " 밥값은 했다."));
+          say(sE, [head, {b:x.t.short+" "+x.n}, " — ", {b:line(x)}, ".", tailTxt]);
+        });
+        worst.forEach(function(x, i){
+          if(x.sc >= 0) return;
+          var head = i===0 ? SP("반대로 ", "반대로 오늘 조용했던 쪽은 ") : "";
+          say(sE, [head, {b:x.t.short+" "+x.n}, " — ", {b:line(x)}, ".",
+            SP(" 아쉬운 하루였다.", " 오늘은 없는 셈 쳐야 했다.")]);
+        });
       }
     }
 
@@ -6144,7 +6413,7 @@ function savePred(g, r, sA, sH){
   state.pred = state.pred || {};
   state.pred[g.id] = {
     ymd:g.ymd, a:g.away, h:g.home, park:g.park||null,
-    p:r.p, eA:r.eA, eH:r.eH, pf:r.pf||1,
+    p:(typeof r.pShown==="number" ? r.pShown : r.p), eA:r.eA, eH:r.eH, pf:r.pf||1,
     sA: sA?sA.n:null, sH: sH?sH.n:null,
     at: Date.now()
   };
@@ -6176,17 +6445,56 @@ function gradePreds(){
   if(added) touch();
   return added;
 }
+/* 이미 끝난 경기를 지금 모델로 다시 맞혀 보고 채점해 둔다.
+   주의: 모델이 쓰는 시즌 누적 기록 안에 그 경기 결과가 이미 들어가 있어서
+   실제보다 잘 맞히는 것처럼 보인다(데이터 누수). 그래서
+   - 표본은 back:true 로 구분해 적중률을 따로 보여주고,
+   - 상수 학습에는 리그 전체 성질(홈 이점·리그 득점·구장 계수)만 쓴다.
+     이 셋은 경기 결과를 알든 모르든 값이 변하지 않아 누수에 안전하다. */
+function backfillGrades(){
+  state.grade=state.grade||[];
+  var done={};
+  state.grade.forEach(function(x){ done[x.id]=1; });
+  var added=0;
+  schedule.forEach(function(g){
+    if(g.status!=="종료") return;
+    if(g.aScore===null || g.aScore===undefined) return;
+    if(g.hScore===null || g.hScore===undefined) return;
+    if(done[g.id]) return;
+    var r=simGameC(g, null, null, SIM_N);
+    var pb=(typeof r.pShown==="number" ? r.pShown : (r?r.p:NaN));
+    if(!r || !isFinite(pb)) return;
+    var winH = g.hScore>g.aScore, tie = g.hScore===g.aScore;
+    state.grade.push({
+      id:g.id, ymd:g.ymd, a:g.away, h:g.home, park:g.park||null,
+      p:pb, eA:r.eA, eH:r.eH, pf:r.pf||1,
+      ra:g.aScore, rh:g.hScore, back:true,
+      hit: tie ? null : ((pb>=0.5) === winH),
+      brier: tie ? null : Math.pow(pb - (winH?1:0), 2)
+    });
+    done[g.id]=1; added++;
+  });
+  if(added){
+    state.grade.sort(function(a2,b2){ return a2.ymd<b2.ymd ? -1 : (a2.ymd>b2.ymd ? 1 : 0); });
+    if(state.grade.length>600) state.grade=state.grade.slice(-600);
+    touch();
+  }
+  return added;
+}
 function labStats(){
   var G=(state.grade||[]).filter(function(x){ return x.hit!==null; });
   var n=G.length;
   if(!n) return null;
   var hit=0, br=0, eA=0, eH=0, rA=0, rH=0, homeW=0, nH=0;
+  var nL=0, hL=0, bL=0, nB=0, hB=0;
   G.forEach(function(x){
     if(x.hit) hit++;
     br+=x.brier;
     eA+=x.eA; eH+=x.eH; rA+=x.ra; rH+=x.rh;
     if(x.rh>x.ra) homeW++;
     nH++;
+    if(x.back){ nB++; if(x.hit) hB++; }
+    else { nL++; if(x.hit) hL++; bL+=x.brier; }
   });
   /* 보정도: 예측 확률 구간별로 실제 홈 승률과 비교 */
   var bins=[[0.20,0.35],[0.35,0.45],[0.45,0.55],[0.55,0.65],[0.65,0.80]];
@@ -6206,6 +6514,8 @@ function labStats(){
   });
   return {
     n:n, hit:hit/n, brier:br/n,
+    nLive:nL, hitLive: nL?hL/nL:null, brierLive: nL?bL/nL:null,
+    nBack:nB, hitBack: nB?hB/nB:null,
     runBias: ((rA+rH)-(eA+eH))/n,
     homeReal: homeW/nH,
     cal:cal, park:pk
@@ -6284,13 +6594,22 @@ function renderLab(){
       + "경기가 끝난 뒤 업데이트하면 자동으로 채점됩니다.";
     cards.appendChild(e); return;
   }
-  var grade = st.hit>=0.60 ? "A" : st.hit>=0.565 ? "B" : st.hit>=0.53 ? "C" : "D";
+  /* 등급과 적중률은 경기 전에 미리 맞힌 것(실시간)만으로 매긴다.
+     사후 채점은 결과를 이미 아는 기록으로 계산해 잘 나올 수밖에 없으니 참고로만 둔다. */
+  var useHit = st.nLive>=10 ? st.hitLive : st.hit;
+  var useBr  = (st.nLive>=10 && st.brierLive!==null) ? st.brierLive : st.brier;
+  var grade = useHit>=0.60 ? "A" : useHit>=0.565 ? "B" : useHit>=0.53 ? "C" : "D";
+  var hitSub = st.nLive>=10
+    ? "실시간 "+st.nLive+"경기" + (st.nBack ? " · 사후 "+st.nBack+"경기 "+pc(st.hitBack)+"(참고)" : "")
+    : st.n+"경기 · 상한 57~60%";
   var rows=[
-    ["적중률", pc(st.hit), st.n+"경기 · 상한 57~60%"],
-    ["Brier", st.brier.toFixed(4), st.brier<0.24 ? "동전 던지기(0.25)보다 나음" : "아직 동전 수준"],
+    ["적중률", pc(useHit), hitSub],
+    ["Brier", useBr.toFixed(4), useBr<0.24 ? "동전 던지기(0.25)보다 나음" : "아직 동전 수준"],
     ["득점 오차", (st.runBias>=0?"+":"")+st.runBias.toFixed(2)+"점", "경기당 예측 대비 실제"],
-    ["등급", grade, SP(st.hit>=0.565 ? "야구 예측치고 잘 맞는 편" : "표본이 더 필요",
-      grade==="A" ? "이 정도면 자랑해도 된다" : grade==="B" ? "야구 예측치곤 준수하다"
+    ["등급", grade, SP(st.nLive<10 ? "실시간 표본이 더 필요"
+        : (useHit>=0.565 ? "야구 예측치고 잘 맞는 편" : "표본이 더 필요"),
+      st.nLive<10 ? "아직 경기 전 예측이 모자라다"
+      : grade==="A" ? "이 정도면 자랑해도 된다" : grade==="B" ? "야구 예측치곤 준수하다"
       : grade==="C" ? "동전보다 조금 나은 수준" : "아직은 감으로 찍는 게 나을지도")]
   ];
   var g2=document.createElement("div"); g2.className="facts";
@@ -6355,12 +6674,24 @@ function renderLab(){
     var n=document.createElement("div"); n.className="bn";
     n.textContent=x.ymd.slice(5)+" "+A.short+" "+x.ra+" : "+x.rh+" "+H.short;
     var tag=document.createElement("span");
-    tag.textContent = x.hit===null ? "무승부" : (x.hit ? "적중" : "빗나감");
+    tag.textContent = (x.hit===null ? "판정 제외" : (x.hit ? "적중" : "빗나감"))
+      + (x.back ? " (사후)" : "");
     tag.style.color = x.hit===null ? "var(--ink3)" : (x.hit ? "var(--pos)" : "var(--neg)");
     tag.style.fontWeight="600";
     n.appendChild(tag);
+    /* 홈 승률만 쓰면 원정을 골라 맞힌 경기가 "45.5% 인데 적중"처럼 보여 오해가 생긴다.
+       모델이 실제로 고른 팀과 그 팀 확률을 쓴다. */
+    var pickT = x.p>=0.5 ? H : A, pickP = x.p>=0.5 ? x.p : 1-x.p;
+    var winT  = x.rh>x.ra ? H : (x.ra>x.rh ? A : null);
     var w=document.createElement("div"); w.className="br";
-    w.textContent="예측 홈 "+pc(x.p)+" · 예측 득점 "+x.eA.toFixed(1)+":"+x.eH.toFixed(1);
+    w.appendChild(document.createTextNode("예측 "));
+    var pk=document.createElement("b");
+    pk.textContent=pickT.short+" "+pc(pickP);
+    pk.style.color=teamInk(pickT.color);
+    w.appendChild(pk);
+    w.appendChild(document.createTextNode(" 우세 → 결과 "
+      + (winT ? winT.short+" 승" : "무승부")
+      + " · 예측 득점 "+x.eA.toFixed(1)+":"+x.eH.toFixed(1)));
     d.appendChild(n); d.appendChild(w); list.appendChild(d);
   });
 }
@@ -6423,25 +6754,6 @@ document.getElementById("bLabApply").addEventListener("click", function(){
     : "바꿀 만한 차이가 없습니다.";
   renderLab();
 });
-var labArm=false;
-document.getElementById("bLabClear").addEventListener("click", function(){
-  if(!labArm){
-    labArm=true; this.textContent="정말 지울까요?";
-    var self=this;
-    setTimeout(function(){ labArm=false; self.textContent="기록 지우기"; }, 4000);
-    return;
-  }
-  labArm=false; this.textContent="기록 지우기";
-  state.pred={}; state.grade=[]; state.tune={};
-  HOME_EDGE=0.032; LG_RUNS=5.1;
-  PARK_F["Seoul-Jamsil"]=0.92; PARK_F["Jamsil"]=0.92;
-  PARK_F["Seoul-Gocheok"]=0.95; PARK_F["Gocheok"]=0.95;
-  PARK_F["Changwon"]=0.98; PARK_F["Busan-Sajik"]=1.00; PARK_F["Sajik"]=1.00;
-  PARK_F["Incheon"]=1.02; PARK_F["Munhak"]=1.02; PARK_F["Munsu"]=1.00;
-  PARK_F["Gwangju"]=1.03; PARK_F["Suwon"]=1.04; PARK_F["Daejeon"]=1.05; PARK_F["Daegu"]=1.07;
-  bumpModel(); touch(); run(); renderLab();
-  document.getElementById("labMsg").textContent="채점 기록과 보정값을 모두 지웠습니다.";
-});
 document.getElementById("bFeed").addEventListener("click", function(){ loadNews(this); });
 document.getElementById("bSimReset").addEventListener("click", function(){
   state.boost={};
@@ -6466,6 +6778,8 @@ initAddForm();
 if(state.myTeam) sel=state.myTeam;
 run();
 if(sel) renderDetail();
+/* 저장해 둔 일정이 있으면 바로 보여준다 — 매번 다시 불러올 필요 없게 */
+if(schedule.length) goToday();
 setTimeout(function(){
   var el=document.getElementById("loader");
   if(el){ el.className="gone"; setTimeout(function(){ el.style.display="none"; }, 600); }

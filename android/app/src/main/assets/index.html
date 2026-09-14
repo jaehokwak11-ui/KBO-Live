@@ -3143,26 +3143,42 @@ function readStandDate(text){
 }
 function readStandings(text){
   text=String(text||"");
+  /* 순위표 한 줄은 항상 "팀 승 패 무 승률" 꼴이다.
+     승률(.548)까지 같이 읽어 승/(승+패) 와 맞는지 대조하면
+     메뉴·주소·최근10경기(5W 0D 5L) 같은 엉뚱한 숫자에 절대 안 걸린다. */
   var got={};
   TEAMS.forEach(function(t){
     var names=[TEAM_EN[t.key]].concat(TEAM_SHORT_EN[t.key]||[]);
     for(var q=0;q<names.length && !got[t.key];q++){
       var nm=names[q].replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-      /* 앞뒤가 알파벳이면 다른 단어의 일부다 (Kia 가 Kiavi 안에 들어가는 식) */
       var re=new RegExp("(?:^|[^A-Za-z])"+nm+"(?![A-Za-z])","g"), m2;
       while((m2=re.exec(text))){
         var at=m2.index+m2[0].length;
-        var seg=text.slice(at, at+60).match(/\d+(?:\.\d+)?/g);
-        if(!seg || seg.length<3) continue;
+        var seg=text.slice(at, at+70).match(/\d*\.?\d+/g);
+        if(!seg || seg.length<4) continue;
         var w=parseInt(seg[0],10), l=parseInt(seg[1],10), d=parseInt(seg[2],10);
+        var pct=parseFloat(seg[3]);
+        if(!isFinite(w)||!isFinite(l)||!isFinite(d)||!isFinite(pct)) continue;
         var g=w+l+d;
         if(!(g>=60 && g<=150) || w<0 || l<0 || d<0 || d>25) continue;
+        if(!(pct>0.15 && pct<0.85)) continue;                 /* 승률 칸이 맞는지 */
+        var mine=(w+l) ? w/(w+l) : 0;
+        if(Math.abs(mine-pct) > 0.004) continue;              /* 핵심 대조 */
         got[t.key]={w:w, l:l, d:d};
         break;
       }
     }
   });
-  return Object.keys(got).length>=8 ? got : null;
+  /* 10팀이 다 안 읽히면 뭔가 잘못된 것이다. 반쪽짜리 표를 쓰느니 옛 순위를 유지하고
+     실패를 알리는 편이 낫다. */
+  if(Object.keys(got).length!==TEAMS.length) return null;
+  /* 리그 전체 검산 — 한 경기마다 승자와 패자가 하나씩이므로 총 승 = 총 패.
+     무승부는 두 팀이 함께 쌓으므로 짝수다. 한 줄이라도 잘못 읽히면 여기서 걸린다. */
+  var W=0, L=0, D=0;
+  Object.keys(got).forEach(function(k){ W+=got[k].w; L+=got[k].l; D+=got[k].d; });
+  if(W!==L) return null;
+  if(D%2!==0) return null;
+  return got;
 }
 var TEAM_SRC = { doosan:"1-Doosan-Bears", lotte:"2-Lotte-Giants", samsung:"3-Samsung-Lions",
   hanwha:"4-Hanwha-Eagles", kia:"5-Kia-Tigers", lg:"6-LG-Twins", nc:"9-NC-Dinos",

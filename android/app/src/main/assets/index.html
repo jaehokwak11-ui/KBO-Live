@@ -1597,9 +1597,11 @@ function renderDaily(){
 var GAMES_PER_SEASON = 144;
 var PS_HOME = 0.030;
 var PS_HOME5 = [1,1,0,0,1], PS_HOME7 = [1,1,0,0,0,1,1];
-function psSeries(pa, len){
-  var need=(len+1)/2, wa=0, wb=0, seq = len===7 ? PS_HOME7 : PS_HOME5;
-  for(var gi=0; gi<len && wa<need && wb<need; gi++){
+function psSeries(pa, len, wa0, wb0){
+  var need=(len+1)/2, wa=wa0||0, wb=wb0||0, seq = len===7 ? PS_HOME7 : PS_HOME5;
+  if(wa>=need) return true;
+  if(wb>=need) return false;
+  for(var gi=wa+wb; gi<len && wa<need && wb<need; gi++){
     var pg = pa + (seq[gi] ? PS_HOME : -PS_HOME);
     if(pg<0.05) pg=0.05; else if(pg>0.95) pg=0.95;
     if(RNG()<pg) wa++; else wb++;
@@ -1607,15 +1609,23 @@ function psSeries(pa, len){
   return wa>wb;
 }
 /* 와일드카드 — 4위 홈 2연전, 4위는 1승만 하면 올라간다 */
-function psWC(pa){
+/* 와일드카드 — 4위 홈 2연전, 4위는 1승만 하면 올라간다.
+   이미 치른 경기가 있으면 그 결과에서 이어서 본다. */
+function psWC(pa, w4, w5){
+  w4=w4||0; w5=w5||0;
+  if(w4>=1) return true;
+  if(w5>=2) return false;
   var pg=pa+PS_HOME;
   if(pg<0.05) pg=0.05; else if(pg>0.95) pg=0.95;
+  if(w5===1) return RNG()<pg;          /* 5위가 1차전을 이겼다 — 2차전 하나 남음 */
   if(RNG()<pg) return true;
   return RNG()<pg;
 }
 var psCache=null, psCacheKey="";
 function psOdds(n){
-  var key = _mv+"|"+n+"|"+schedule.length+"|"+JSON.stringify(state.teamRec||{});
+  var doneN=0;
+  schedule.forEach(function(g){ if(g.status==="종료") doneN++; });
+  var key = _mv+"|"+n+"|"+schedule.length+"|"+doneN+"|"+JSON.stringify(state.teamRec||{});
   if(psCache && psCacheKey===key) return psCache;
   var N=TEAMS.length, idx={};
   TEAMS.forEach(function(t,i){ idx[t.key]=i; });
@@ -1626,12 +1636,19 @@ function psOdds(n){
 
   /* 일정에 남아 있는 경기 — 각 경기의 홈 승률을 미리 구해 둔다 */
   var rem=[], cnt=new Int32Array(N);
-  schedule.forEach(function(g){
+  var left=new Int32Array(N);
+  for(var q0=0;q0<N;q0++) left[q0]=Math.max(0, GAMES_PER_SEASON-(bw[q0]+bl[q0]+bd[q0]));
+  schedule.slice().sort(function(a2,b2){ return a2.ymd<b2.ymd ? -1 : (a2.ymd>b2.ymd ? 1 : 0); })
+   .forEach(function(g){
     if(g.status==="종료") return;
     if(!(g.away in idx) || !(g.home in idx)) return;
+    /* 포스트시즌 경기를 정규시즌 승패에 더하면 순위가 통째로 틀어진다 */
+    if(isPostGame(g)) return;
+    var ia=idx[g.away], ih=idx[g.home];
+    if(cnt[ia]>=left[ia] || cnt[ih]>=left[ih]) return;   /* 144경기를 넘기지 않는다 */
     var m=gameModel(g, null, null);
-    rem.push({ a:idx[g.away], h:idx[g.home], p:m.p });
-    cnt[idx[g.away]]++; cnt[idx[g.home]]++;
+    rem.push({ a:ia, h:ih, p:m.p });
+    cnt[ia]++; cnt[ih]++;
   });
 
   /* 일정을 아직 못 받은 잔여 경기는 리그 평균 상대로 채운다 */
@@ -1648,6 +1665,7 @@ function psOdds(n){
       cSEED=new Float64Array(N*5), cFIN=new Float64Array(N*N);
   var w=new Int32Array(N), l=new Int32Array(N), wp=new Float64Array(N);
   var ord=[]; for(i=0;i<N;i++) ord.push(i);
+  var SER=psSeriesState();
   var prev=RNG; RNG=seedRand("ps|"+key.slice(0,120));
 
   for(var s2=0;s2<n;s2++){
@@ -1670,11 +1688,41 @@ function psOdds(n){
     var a1=ord[0], a2=ord[1], a3=ord[2], a4=ord[3], a5=ord[4];
     /* 시리즈 안에서는 psSeries 가 홈 이점을 경기별로 붙이므로 여기선 중립으로 준다 */
     var mp=function(x,y){ return matchupP(wp[y], wp[x], false); };
-    var wc = psWC(mp(a4,a5)) ? a4 : a5;
-    var sp = psSeries(mp(a3,wc), 5) ? a3 : wc;
-    var po = psSeries(mp(a2,sp), 5) ? a2 : sp;
+    /* 이미 치러진 포스트시즌 경기가 있으면 그 전적에서 이어서 본다 */
+    var got=function(x,y){
+      if(!SER) return [0,0];
+      var kx=TEAMS[x].key, ky=TEAMS[y].key;
+      var st=SER[[kx,ky].sort().join("|")];
+      if(!st) return [0,0];
+      return [st.w[kx]||0, st.w[ky]||0];
+    };
+    /* 어떤 시드와 실제로 붙은 팀이 있으면, 그 팀이 그 라운드를 뚫고 올라온 것이다.
+       그 앞 라운드는 이미 끝난 것이므로 다시 돌리지 않는다. */
+    var oppOf=function(x, skip){
+      if(!SER) return -1;
+      var kx=TEAMS[x].key;
+      for(var kk in SER){
+        var pr=kk.split("|");
+        if(pr[0]!==kx && pr[1]!==kx) continue;
+        var oi=idx[pr[0]===kx ? pr[1] : pr[0]];
+        if(oi===undefined || oi===x) continue;
+        if(skip && skip.indexOf(oi)>=0) continue;
+        return oi;
+      }
+      return -1;
+    };
+    var g45=got(a4,a5);
+    var wc = psWC(mp(a4,a5), g45[0], g45[1]) ? a4 : a5;
+    var o3=oppOf(a3,[a1,a2]);  if(o3>=0) wc=o3;
+    var g3=got(a3,wc);
+    var sp = psSeries(mp(a3,wc), 5, g3[0], g3[1]) ? a3 : wc;
+    var o2=oppOf(a2,[a1]);     if(o2>=0) sp=o2;
+    var g2=got(a2,sp);
+    var po = psSeries(mp(a2,sp), 5, g2[0], g2[1]) ? a2 : sp;
+    var o1=oppOf(a1,[]);       if(o1>=0) po=o1;
     cKS[a1]++; cKS[po]++;
-    var ch = psSeries(mp(a1,po), 7) ? a1 : po;
+    var g1=got(a1,po);
+    var ch = psSeries(mp(a1,po), 7, g1[0], g1[1]) ? a1 : po;
     cWIN[ch]++;
   }
   RNG=prev;
@@ -1693,20 +1741,40 @@ function psOdds(n){
   return out;
 }
 /* 가을야구 전망 화면 */
+/* 정규시즌(144경기) 뒤에 붙는 경기를 포스트시즌으로 본다.
+   10월 이후이고, 리그 전체가 정규시즌을 거의 다 치렀고, 두 팀 모두 일정을 마쳤을 때. */
+function isPostGame(g){
+  if(!g || !g.ymd) return false;
+  if(+g.ymd.slice(5,7) < 10) return false;
+  var tot=0;
+  TEAMS.forEach(function(t){ var r=recOf(t); tot+=(r.w+r.l+r.d); });
+  if(tot < GAMES_PER_SEASON*TEAMS.length*0.92) return false;
+  var done=function(k){ var t=teamOf(k); if(!t) return false;
+    var r=recOf(t); return (r.w+r.l+r.d) >= GAMES_PER_SEASON-4; };
+  return done(g.away) && done(g.home);
+}
 function psGames(){
-  /* 정규시즌(144경기) 뒤에 붙는 경기를 포스트시즌으로 본다.
-     일정에 10월 이후 경기가 들어오면 자동으로 여기 잡힌다. */
-  var out=[];
-  schedule.forEach(function(g){
-    if(!g.ymd) return;
-    var mm=+g.ymd.slice(5,7);
-    if(mm<10) return;
-    var tot=0;
-    TEAMS.forEach(function(t){ var r=recOf(t); tot+=(r.w+r.l+r.d); });
-    if(tot < GAMES_PER_SEASON*TEAMS.length*0.92) return;   /* 정규시즌이 거의 끝났을 때만 */
-    out.push(g);
+  return schedule.filter(isPostGame)
+    .sort(function(a,b){ return a.ymd<b.ymd ? -1 : (a.ymd>b.ymd ? 1 : 0); });
+}
+/* 포스트시즌 시리즈 현황 — 어느 팀이 몇 승 했고 끝났는지 */
+function psSeriesState(){
+  var gs=psGames();
+  if(!gs.length) return null;
+  var ser={};
+  gs.forEach(function(g){
+    var k=[g.away,g.home].sort().join("|");
+    var st=ser[k] || (ser[k]={ w:{}, played:0, first:g.ymd });
+    st.w[g.away]=st.w[g.away]||0; st.w[g.home]=st.w[g.home]||0;
+    if(g.ymd<st.first) st.first=g.ymd;
+    if(g.status==="종료" && g.aScore!==null && g.aScore!==undefined
+       && g.hScore!==null && g.hScore!==undefined){
+      st.played++;
+      if(g.aScore>g.hScore) st.w[g.away]++;
+      else if(g.hScore>g.aScore) st.w[g.home]++;
+    }
   });
-  return out.sort(function(a,b){ return a.ymd<b.ymd ? -1 : (a.ymd>b.ymd ? 1 : 0); });
+  return ser;
 }
 function renderPS(){
   var box=document.getElementById("tbPS");
@@ -3474,9 +3542,9 @@ function refreshFree(btn){
       var lu=lineups[gx.id], sA0=null, sH0=null;
       if(lu){
         if(lu[gx.away] && lu[gx.away].pit.length)
-          sA0=matchLineup(gx.away, lu[gx.away].pit[0]) || tempPitcher(gx.away, lu[gx.away].pit[0]);
+          sA0=pickStarter(gx.away, lu[gx.away].pit[0]);
         if(lu[gx.home] && lu[gx.home].pit.length)
-          sH0=matchLineup(gx.home, lu[gx.home].pit[0]) || tempPitcher(gx.home, lu[gx.home].pit[0]);
+          sH0=pickStarter(gx.home, lu[gx.home].pit[0]);
       }
       savePred(gx, simGameC(gx, sA0, sH0, SIM_N), sA0, sH0);
       predN++;
@@ -3834,16 +3902,16 @@ function talentVec(){
 }
 function oneSeason(pv){
   var N=10,i,j,g;
+  /* 순위 탭·오늘의 경기와 같은 함수를 쓴다. P[i][j] = i 홈일 때 i 가 이길 확률. */
   var P=new Float64Array(N*N);
   for(i=0;i<N;i++) for(j=0;j<N;j++){
     if(i===j) continue;
-    var a=pv[i], b=pv[j];
-    P[i*N+j]=(a-a*b)/(a+b-2*a*b);
+    P[i*N+j]=matchupP(pv[j], pv[i], true);
   }
   var w=new Int32Array(N), l=new Int32Array(N), t=new Int32Array(N), h=new Int32Array(N*N);
   for(i=0;i<N;i++) for(j=i+1;j<N;j++){
-    var p=P[i*N+j];
     for(g=0;g<16;g++){
+      var p = g<8 ? P[i*N+j] : 1-P[j*N+i];      /* 8홈 8원정 */
       if(Math.random()<TIE_RATE){ t[i]++; t[j]++; }
       else if(Math.random()<p){ w[i]++; l[j]++; h[i*N+j]++; }
       else { w[j]++; l[i]++; h[j*N+i]++; }
@@ -5063,7 +5131,7 @@ function lineupOps(key, gid){
       .sort(function(a,b){ return b.pa-a.pa; });
     if(lu && lu[key] && lu[key].bat.length>=6){
       lu[key].bat.slice(0,9).forEach(function(b){
-        var p=matchLineup(key, b);
+        var p=matchLineup(key, b, "H");
         if(p && p.t==="H" && !seen[p.n]){ seen[p.n]=1; list.push(p); }
       });
     }
@@ -5505,6 +5573,15 @@ function renderGames(){
     if(gSel===g.id) stillSel=true;
     var A=teamOf(g.away), H=teamOf(g.home);
     var r=simGameC(g, null, null, SIM_N);
+    /* 끝난 경기 카드에 붙는 확률 막대도 "그때 그 예측"이어야 한다.
+       지금 다시 계산하면 경기 결과가 섞인 기록으로 그려져서
+       상세·성적표와 다른 팀이 앞선 것처럼 보인다. */
+    var Qc=(state.pred||{})[g.id];
+    if(g.status==="종료" && Qc && typeof Qc.p==="number"){
+      var tc = typeof Qc.tie==="number" ? Qc.tie : TIE_RATE;
+      r = { p:Qc.p, away:(1-Qc.p)*(1-tc), home:Qc.p*(1-tc), tie:tc,
+            eA:Qc.eA, eH:Qc.eH, top:r.top, pf:r.pf };
+    }
     var card=document.createElement("div");
     card.className="gc rise"+(gSel===g.id?" on":"")+(isMine(g)?" mine":"");
     card.style.setProperty("--i", gi);
@@ -5597,24 +5674,39 @@ var POS_KR={ C:"포수", "1B":"1루", "2B":"2루", "3B":"3루", SS:"유격",
   IF:"내야", OF:"외야", UT:"유틸", P:"투수" };
 /* 라인업에서 읽은 선수를 명단과 맞춘다.
    화면에 성만 뜨는 외국인 선수는 주소 풀네임으로, 그래도 안 되면 성으로 찾는다. */
-function matchLineup(key, info){
+/* want: "P" 면 투수 자리, "H" 면 타자 자리.
+   이름 일부만 같아도 붙여 버리면 포수를 선발투수로 세우는 일이 생긴다
+   (KIA 선발이 김태형으로 뜨던 문제). 그래서 자리와 보직을 같이 본다. */
+function matchLineup(key, info, want){
   if(!info) return null;
-  var p=playerByRoman(key, info.n);
-  if(p) return p;
+  var fit=function(q){ return !!q && (!want || q.t===want); };
+  var exact=playerByRoman(key, info.n);
+  if(fit(exact)) return exact;
   if(info.alt){
-    p=playerByRoman(key, info.alt);
-    if(p) return p;
+    var alt=playerByRoman(key, info.alt);
+    if(fit(alt)) return alt;
+    if(!exact) exact=alt;
   }
   var last=deacc(info.n).split(/\s+/).pop().toLowerCase().replace(/[^a-z]/g,"");
   if(last.length>=4){
     var hit=null, cnt=0;
     rosterOf(key).forEach(function(q){
+      if(want && q.t!==want) return;
       var parts=deacc(q.r).toLowerCase().replace(/[^a-z ]/g," ").split(/\s+/);
       if(parts.indexOf(last)>=0){ hit=q; cnt++; }
     });
     if(cnt===1) return hit;
   }
-  return null;
+  /* 보직이 안 맞아도 이름이 정확히 같으면 그 선수다 (보직 변경·기록 지연) */
+  return exact || null;
+}
+/* 선발투수는 반드시 투수여야 한다. 명단에서 투수로 못 찾으면
+   이름만 빌린 임시 투수로 잡는다(타자를 마운드에 세우지 않는다). */
+function pickStarter(key, info){
+  if(!info) return null;
+  var p=matchLineup(key, info, "P");
+  if(p && p.t==="P") return p;
+  return tempPitcher(key, info);
 }
 /* Ávila 와 Avila 를 같은 이름으로 본다 */
 function deacc(x){
@@ -5833,7 +5925,7 @@ function absorbLineup(g, lu){
       /* 교체로 들어가 수비를 본 자리도 실제 출장이니 같이 센다 */
       lu[k].bat.concat(lu[k].subs||[]).forEach(function(bx){
         if(bx.old || !bx.pos) return;          /* 지난 경기에서 복사해 온 줄은 빼고 */
-        var q=matchLineup(k, bx);
+        var q=matchLineup(k, bx, "H");
         if(q && q.t!=="P"){ tallyPos(q.n, bx.pos); counted++; }
       });
     });
@@ -5848,7 +5940,7 @@ function absorbLineup(g, lu){
       if(!lu[k]) return;
       lu[k].pit.forEach(function(px){
         if(!px.np) return;
-        var q2=matchLineup(k, px), nm2 = q2 ? q2.n : px.n;
+        var q2=matchLineup(k, px, "P"), nm2 = q2 ? q2.n : px.n;
         var t2=state.armN[nm2] || (state.armN[nm2]={});
         t2[g.ymd]=Math.max(t2[g.ymd]||0, px.np);
         got++;
@@ -5914,7 +6006,7 @@ function keyBatters(key, lu, n){
   var list=[], seen={};
   if(lu && lu[key] && lu[key].bat.length){
     lu[key].bat.forEach(function(b){
-      var p=matchLineup(key, b);
+      var p=matchLineup(key, b, "H");
       if(p && p.t==="H" && !seen[p.n]){ seen[p.n]=1; list.push(p); }
     });
   }
@@ -6051,7 +6143,7 @@ function renderGameDetail(g){
     var luP=lineups[g.id], order=[];
     if(luP && luP[key] && luP[key].bat.length>=6){
       luP[key].bat.slice(0,9).forEach(function(bb2){
-        var q=matchLineup(key, bb2);
+        var q=matchLineup(key, bb2, "H");
         if(q && q.t==="H") order.push(q);
       });
     }
@@ -6136,7 +6228,7 @@ function renderGameDetail(g){
       col.appendChild(h4);
       if(side.pit.length){
         var pr=document.createElement("div"); pr.className="lup";
-        var mine=matchLineup(T.key, side.pit[0]);
+        var mine=matchLineup(T.key, side.pit[0], "P");
         pr.textContent="선발 "+(mine ? mine.n : (side.pit[0].n||side.pit[0].alt))
           + (mine ? " (기여 "+contribution(mine)+")"
                   : (side.pit[0].era ? " (ERA "+side.pit[0].era.toFixed(2)+" · 명단 밖)"
@@ -6149,7 +6241,7 @@ function renderGameDetail(g){
       }
       side.bat.slice(0,9).forEach(function(b, i){
         var r=document.createElement("div"); r.className="lur";
-        var mine=matchLineup(T.key, b);
+        var mine=matchLineup(T.key, b, "H");
         var n1=document.createElement("span"); n1.className="luo"; n1.textContent=(i+1);
         var n2=document.createElement("span"); n2.className="lun";
         n2.textContent=(mine ? mine.n : (b.n||b.alt));
@@ -6177,7 +6269,7 @@ function renderGameDetail(g){
        [H, lu[H.key], function(p){ sH=p; }, function(s2){ selH=s2; }]].forEach(function(x){
         if(!x[1] || !x[1].pit.length) return;
         var info=x[1].pit[0];
-        var p=matchLineup(x[0].key, info);
+        var p=matchLineup(x[0].key, info, "P");
         if(!p || p.t!=="P"){
           /* 명단에 없는 투수 — 경기 페이지 성적으로 임시로 세운다 */
           p=tempPitcher(x[0].key, info);
@@ -6438,12 +6530,26 @@ function renderGameDetail(g){
     var hp=r.p;
     var M0=gameModel(g, null, null);
     var flat=M0.p;
+
+    /* "경기 전에 이렇게 봤다"는 반드시 그때 저장해 둔 값이어야 한다.
+       지금 다시 계산하면 경기가 끝난 뒤의 선발·기록이 섞여서
+       같은 경기가 화면마다 다른 판정으로 나온다(성적표와 반대로 뜨던 버그). */
+    var doneX = g.aScore!==null && g.aScore!==undefined && g.status==="종료";
+    var Q = (state.pred||{})[g.id];
+    var preTie = Q && typeof Q.tie==="number" ? Q.tie : TIE_RATE;
+    var preH = Q ? Q.p*(1-preTie) : r.home;
+    var preA = Q ? (1-Q.p)*(1-preTie) : r.away;
+    var preEA = Q ? Q.eA : r.eA, preEH = Q ? Q.eH : r.eH;
+    /* 끝난 경기는 화면 전체가 "그때 그 예측" 하나로만 말한다 */
+    var rPre = (doneX && Q)
+      ? { p:Q.p, away:preA, home:preH, tie:preTie, eA:preEA, eH:preEH, top:r.top, pf:r.pf }
+      : r;
     var favT = r.away>=r.home ? A : H;
     var favP = r.away>=r.home ? r.away : r.home;
 
     /* ===== 간단 분석 (처음에 보이는 부분) ===== */
-    var favT0 = r.away>=r.home ? A : H;
-    var favP0 = r.away>=r.home ? r.away : r.home;
+    var favT0 = rPre.away>=rPre.home ? A : H;
+    var favP0 = rPre.away>=rPre.home ? rPre.away : rPre.home;
     var top0 = r.top && r.top[0] ? r.top[0].s.split("-") : null;
     var uu = [["선발",mA.rot,mH.rot],["불펜",mA.pen,mH.pen],["타선",mA.off,mH.off],["뎁스",mA.dep,mH.dep]];
     var key0 = uu.slice().sort(function(x,y){ return Math.abs(y[1]-y[2])-Math.abs(x[1]-x[2]); })[0];
@@ -6455,13 +6561,27 @@ function renderGameDetail(g){
       var live0 = g.status!=="종료";
       var sv=sblock(live0 ? "지금까지" : "결과 채점");
       var tieX=(g.aScore===g.hScore), winAX=(g.aScore>g.hScore);
-      var predAX=(r.away>=r.home);
+      /* 판정 기준은 성적표(gradePreds)와 글자 그대로 같아야 한다: p>=0.5 면 홈 선택 */
+      var prePH = Q ? Q.p : (typeof r.pShown==="number" ? r.pShown : r.p);
+      var predAX = !(prePH>=0.5);
+      /* 숫자도 성적표와 같은 것으로 보여 준다 — 무승부를 뺀 승부 확률 */
+      var prePick = predAX ? 1-prePH : prePH;
+      var edge=Math.abs(prePH-0.5)*2;
+      var coin = edge<0.02;          /* 사실상 반반이었던 경기 */
       say(sv, [(live0?"현재 ":"최종 "), {b:A.short+" "+g.aScore+" : "+g.hScore+" "+H.short},
         tieX ? (live0?" 동점." : " 무승부.") : (live0 ? " 로 "+(winAX?A.short:H.short)+" 리드." : " 로 "+(winAX?A.short:H.short)+" 승리."),
-        " 모델은 경기 전에 ", {b:(predAX?A.short:H.short)+" "+pc(predAX?r.away:r.home)}, "로 봤다",
-        live0 ? "." : (tieX ? " (무승부는 예측 대상 밖)." : (winAX===predAX ? " — 맞혔다." : " — 빗나갔다."))]);
+        Q ? " 모델은 경기 전에 " : " 경기 전 예측 기록이 없어 지금 기준으로 다시 계산하면 ",
+        {b:(predAX?A.short:H.short)+" "+pc(prePick)}, Q ? "로 봤다" : "다",
+        live0 ? "." : (tieX ? " (무승부는 예측 대상 밖)."
+          : (winAX===predAX
+             ? (coin ? SP(" — 맞히긴 했지만 사실상 반반이라 본 경기다.",
+                          " — 맞혔다고 하기엔 그냥 반반으로 찍은 거다.")
+                     : " — 맞혔다.")
+             : (coin ? SP(" — 빗나갔지만 애초에 반반으로 본 경기다.",
+                          " — 틀렸는데, 원래 모르겠다고 한 경기라 할 말은 있다.")
+                     : " — 빗나갔다.")))]);
       if(!live0){
-        say(sv, ["예측 득점 ", {b:r.eA.toFixed(1)+" · "+r.eH.toFixed(1)}, " 대 실제 ",
+        say(sv, ["예측 득점 ", {b:preEA.toFixed(1)+" · "+preEH.toFixed(1)}, " 대 실제 ",
           {b:g.aScore+" · "+g.hScore}, ". 더 자세한 채점은 아래 세부 분석에 있다."]);
       }
     }
@@ -6475,7 +6595,7 @@ function renderGameDetail(g){
         var side=luB[T[1]]; if(!side) return;
         side.bat.concat(side.subs||[]).forEach(function(bx){
           if(!bx.box || !bx.box.ab) return;
-          var q=matchLineup(T[1], bx);
+          var q=matchLineup(T[1], bx, "H");
           var sc = bx.box.h*1 + bx.box.hr*1.6 + bx.box.rbi*0.9 + bx.box.r*0.4
                  - (bx.box.ab - bx.box.h)*0.32;
           stars.push({ t:T[0], n: q?q.n:(bx.n||bx.alt), b:bx.box, sc:sc, pos:bx.pos });
@@ -6510,18 +6630,18 @@ function renderGameDetail(g){
       }
     }
 
-    var done0 = g.aScore!==null && g.aScore!==undefined && g.status==="종료";
+    var done0 = doneX;
     /* 글보다 그림이 빠르다 — 승률 게이지 + 부문 레이더 + 핵심 수치 */
     var sg=sblock(done0 ? "경기 전 예측 한눈에" : SP("한눈에 보기", "한눈에 보기 🌶️"));
-    drawGauge(sg, r);
+    drawGauge(sg, rPre);
     drawRadar2(sg, uu);
-    drawFacts(sg, r, key0, kWin);
+    drawFacts(sg, rPre, key0, kWin);
 
     var s1=sblock(SP("짚어 볼 점", "그래서 뭘 보면 되냐면"));
     say(s1, [{b:favT0.name}, Ji(favT0.name).slice(favT0.name.length)+" ", {b:pc(favP0)},
       done0 ? "로 앞선 경기였다. " : "로 앞선다. ",
-      "예측 득점은 "+A.short+" ", {b:r.eA.toFixed(1)+"점"}, " · "+H.short+" ",
-      {b:r.eH.toFixed(1)+"점"}, "이고, ",
+      "예측 득점은 "+A.short+" ", {b:rPre.eA.toFixed(1)+"점"}, " · "+H.short+" ",
+      {b:rPre.eH.toFixed(1)+"점"}, "이고, ",
       top0 ? "가장 자주 나온 스코어는 " : "",
       top0 ? {b:A.short+" "+top0[0]+" : "+top0[1]+" "+H.short} : "",
       top0 ? (top0[0]===top0[1] ? "로, 동점이라 연장까지 갈 만한 그림이다." : "다.") : ""]);
@@ -6900,6 +7020,7 @@ function savePred(g, r, sA, sH){
   state.pred[g.id] = {
     ymd:g.ymd, a:g.away, h:g.home, park:g.park||null,
     p:(typeof r.pShown==="number" ? r.pShown : r.p), eA:r.eA, eH:r.eH, pf:r.pf||1,
+    tie:(typeof r.tie==="number" ? r.tie : TIE_RATE),
     sp: PROB_SPREAD,
     sA: sA?sA.n:null, sH: sH?sH.n:null,
     at: Date.now()
